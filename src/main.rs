@@ -1,4 +1,7 @@
+use vela::{app::App, banner::BANNER};
+
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
+    println!("{BANNER}");
+    App::run().await;
 }
