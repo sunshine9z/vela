@@ -7,3 +7,11 @@ server:
   web_dir: data/web
   # The directory where the upload files will be served from.
   upload_dir: data/upload
+
+logger:
+  enable: true
+  level: trace
+  log_dir: logs
+  web_file_name: access
+  api_file_name: api
+  format: compact  

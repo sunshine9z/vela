@@ -19,4 +19,7 @@ pub enum AppError {
     // 内部错误-配置错误
     #[error("内部错误(500), 配置错误: {0}")]
     ConfigError(String),
+    // 内部错误-日志错误
+    #[error("内部错误(500), 日志配置错误: {0}")]
+    LoggerError(String),
 }

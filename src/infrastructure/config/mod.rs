@@ -4,4 +4,4 @@ pub mod config;
 
 use config::Config;
 
-pub static CONFIG: Lazy<Config> = Lazy::new(|| Config::init());
+pub static APP_CONFIG: Lazy<Config> = Lazy::new(|| Config::init());
