@@ -5,13 +5,14 @@ use tracing_appender::{
     non_blocking::WorkerGuard,
     rolling::{RollingFileAppender, Rotation},
 };
+use tracing_log::LogTracer;
 use tracing_subscriber::{EnvFilter, prelude::*};
 use tracing_subscriber::{
     Layer, Registry, filter,
     fmt::{self, time::FormatTime},
 };
 
-use crate::infrastructure::config::{APP_CONFIG, config::LogLevel};
+use config::{APP_CONFIG, config::LogLevel};
 
 static MODULE_NAME: &str = "[日志]";
 
@@ -31,6 +32,12 @@ impl FormatTime for LocalTimer {
 
 pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
     let mut guards = Vec::new();
+
+    // 消费log门面日志 转为 tracing Event日志
+    LogTracer::builder()
+        // .with_max_level(log::LevelFilter::Error)
+        .init()
+        .expect(format!("{MODULE_NAME} LogTracer 初始化失败").as_str());
 
     let log_conf = APP_CONFIG.logger.clone();
 
@@ -73,7 +80,7 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
         LogLevel::Error => tracing::Level::ERROR,
         _ => tracing::Level::INFO,
     };
-
+    // 集合
     let subscriber = Registry::default()
         .with(EnvFilter::from_default_env().add_directive(get_level.into()))
         .with(

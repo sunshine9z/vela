@@ -1,11 +1,9 @@
+use bin::app::App;
 use tokio::select;
-use vela::{app::App, banner::BANNER};
 
 #[tokio::main]
 async fn main() {
-    let _guards = vela::infrastructure::logger::init().unwrap();
-
-    tracing::info!("{BANNER}");
+    let _guards = logger::init().unwrap();
     App::run().await;
 
     select! {

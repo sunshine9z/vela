@@ -1,11 +1,10 @@
+use common::error::AppError;
 use serde::{Deserialize, Serialize};
 use serde_variant::to_variant_name;
 use serde_yaml::from_str;
 use std::{env, fs};
 
-use crate::common::error::AppError;
-
-static CONFIG_PATH: &str = "src/conf";
+static CONFIG_PATH: &str = "conf";
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub server: Server,
