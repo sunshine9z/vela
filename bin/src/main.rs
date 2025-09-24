@@ -1,5 +1,5 @@
-use bin::app::App;
 use tokio::select;
+use vela::app::App;
 
 #[tokio::main]
 async fn main() {
