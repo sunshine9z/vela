@@ -9,3 +9,6 @@ bb8-redis = "0.24.0"
 
 commonx = { package = "common", path = "../../common" }
 configx = { package = "config", path = "../config" }
+loggerx = { package = "logger", path = "../logger" }
+once_cell = "1.21.3"
+tracing = "0.1.41"

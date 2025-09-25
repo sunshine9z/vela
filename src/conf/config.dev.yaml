@@ -1,0 +1,52 @@
+server:
+  port: 8080
+  host: 0.0.0.0
+  # The directory where the static files will be served from.
+  static_dir: data/static
+  # The directory where the web files will be served from.
+  web_dir: data/web
+  # The directory where the upload files will be served from.
+  upload_dir: data/upload
+
+logger:
+  enable: true
+  level: trace
+  log_dir: logs
+  web_file_name: access
+  api_file_name: api
+  format: compact  
+
+
+cache:
+  # Cache type, options: redis, memory
+  cache_type: redis
+  namespace: vela  
+  pool_size: 17
+  # Queue Configuration
+  url: redis://:ymDT@rediS2pwD@127.0.0.1:6666/12 
+
+# genid 雪花id
+snowgenera:
+  # 机器ID
+  machine_id: 1001
+  # 机器节点
+  node_id: 1
+
+database:
+  uri: "mysql://root:12345678@localhost:3306/vela"
+  # When enabled, the sql query will be logged.
+  enable_logging: true
+  # Set the timeout duration when acquiring a connection.
+  connect_timeout: 60000
+  # Set the idle duration before closing a connection.
+  idle_timeout: 5000
+  # Minimum number of connections for a pool.
+  min_connections: 1
+  # Maximum number of connections for a pool.
+  max_connections: 20
+  # Run migration up when application loaded
+  auto_migrate: true
+  # Truncate database when application loaded. This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
+  dangerously_truncate: false
+  # Recreating schema when application loaded.  This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
+  dangerously_recreate: false   

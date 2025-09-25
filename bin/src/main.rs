@@ -8,7 +8,6 @@ async fn main() {
 
     web_info!("web_info test");
     App::run().await;
-
     select! {
         _ = tokio::signal::ctrl_c() => {
             web_info!("ctrl-c signal received, exit");

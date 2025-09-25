@@ -1,4 +1,6 @@
-use tracing::info;
+use cachex::CacheManager;
+use loggerx::web_info;
+use persistencex::init::init_db;
 
 static MODULE_NAME: &str = "[app]";
 
@@ -15,13 +17,15 @@ impl App {
     }
 
     pub async fn run() {
-        info!("{MODULE_NAME}: 应用启动");
-        info!("{} v{} is running", Self::app_name(), Self::app_version());
-
-        initdb();
+        web_info!("{MODULE_NAME}: 应用启动");
+        CacheManager::init().await.unwrap();
+        web_info!("{MODULE_NAME}: 1. 缓存初始化 ... [成功]");
+        init_db().await.unwrap();
+        web_info!("{MODULE_NAME}: 2. 数据库初始化 ... [成功]");
+        web_info!("{MODULE_NAME}: 应用启动完成");
     }
 }
 
-fn initdb() {
-    info!("{MODULE_NAME}: 初始化数据库");
-}
+// fn initdb() {
+//     info!("{MODULE_NAME}: 初始化数据库");
+// }

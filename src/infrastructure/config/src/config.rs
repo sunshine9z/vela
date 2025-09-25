@@ -1,21 +1,23 @@
-use common::error::AppError;
+use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
 use serde_variant::to_variant_name;
 use serde_yaml::from_str;
 use std::{env, fs};
 
-static CONFIG_PATH: &str = "conf";
+static CONFIG_PATH: &str = "src/conf";
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub server: Server,
     pub logger: Logger,
     pub cache: CacheConfig,
+    pub snowgenera: SnowGenerator,
+    pub database: DatabaseConfig,
 }
 
 impl Config {
     pub fn init() -> Self {
-        let env = env::var("environment").unwrap_or_else(|_| "development".to_string());
-        Self::load_config(env).unwrap()
+        let env: String = env::var("environment").unwrap_or_else(|_| "dev".to_string());
+        Self::load_config(format!("config.{}", env)).unwrap()
     }
     fn load_config(env: String) -> Result<Self, AppError> {
         // 这里应该继续实现加载配置文件的逻辑
@@ -93,4 +95,34 @@ pub struct CacheConfig {
     pub namespace: Option<String>,
     pub pool_size: Option<u32>,
     pub url: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct SnowGenerator {
+    pub machine_id: i32,
+    pub node_id: i32,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DatabaseConfig {
+    pub uri: String,
+    #[serde(default = "default_true")]
+    pub enable_logging: bool,
+    pub connect_timeout: u64,
+    pub idle_timeout: u64,
+    pub min_connections: u32,
+    pub max_connections: u32,
+    #[serde(default = "default_true")]
+    pub auto_migrate: bool,
+    #[serde(default = "default_false")]
+    pub dangerously_truncate: bool,
+    #[serde(default = "default_false")]
+    pub dangerously_recreate: bool,
+}
+
+fn default_false() -> bool {
+    false
+}
+fn default_true() -> bool {
+    true
 }
