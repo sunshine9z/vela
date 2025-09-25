@@ -1,0 +1,11 @@
+[package]
+name = "cache"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bb8 = "0.9.0"
+bb8-redis = "0.24.0"
+
+commonx = { package = "common", path = "../../common" }
+configx = { package = "config", path = "../config" }

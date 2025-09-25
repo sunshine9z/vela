@@ -9,6 +9,7 @@ static CONFIG_PATH: &str = "conf";
 pub struct Config {
     pub server: Server,
     pub logger: Logger,
+    pub cache: CacheConfig,
 }
 
 impl Config {
@@ -84,4 +85,12 @@ pub enum LogFormat {
     Pretty,
     #[serde(rename = "json")]
     Json,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CacheConfig {
+    pub cache_type: String,
+    pub namespace: Option<String>,
+    pub pool_size: Option<u32>,
+    pub url: Option<String>,
 }

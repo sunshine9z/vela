@@ -15,3 +15,12 @@ logger:
   web_file_name: access
   api_file_name: api
   format: compact  
+
+
+cache:
+  # Cache type, options: redis, memory
+  cache_type: redis
+  namespace: vela  
+  pool_size: 17
+  # Queue Configuration
+  url: {{ get_env(name="REDIS_URL", default="redis://:ymDT@rediS2pwD@127.0.0.1:6666/12") }}  
