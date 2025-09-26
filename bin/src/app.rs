@@ -1,4 +1,5 @@
 use cachex::CacheManager;
+use interfacesx::init::start_server;
 use loggerx::web_info;
 use persistencex::init::init_db;
 
@@ -22,10 +23,10 @@ impl App {
         web_info!("{MODULE_NAME}: 1. 缓存初始化 ... [成功]");
         init_db().await.unwrap();
         web_info!("{MODULE_NAME}: 2. 数据库初始化 ... [成功]");
+
+        web_info!("{MODULE_NAME}: 3. 启动web服务 ...");
+        start_server().await.unwrap();
+
         web_info!("{MODULE_NAME}: 应用启动完成");
     }
 }
-
-// fn initdb() {
-//     info!("{MODULE_NAME}: 初始化数据库");
-// }

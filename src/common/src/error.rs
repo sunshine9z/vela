@@ -1,5 +1,8 @@
+use axum::response::IntoResponse;
 use hyper::StatusCode;
 use thiserror::Error;
+
+use crate::traits::IntoStatusTuple;
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
@@ -9,7 +12,7 @@ pub enum AppError {
     BadRequest(String),
     // 未授权
     #[error("未授权(401), 错误信息: {0}")]
-    E401(String),
+    AuthError(String),
     // 未找到
     #[error("资源不存在(404), 错误信息: {0}")]
     E404(String),
@@ -34,6 +37,24 @@ pub enum AppError {
     InternalError(String),
 }
 
+impl IntoResponse for AppError {
+    fn into_response(self) -> axum::response::Response {
+        self.into_status_tuple().into_response()
+    }
+}
+
+impl IntoStatusTuple for AppError {
+    fn into_status_tuple(self) -> (StatusCode, String) {
+        match self {
+            Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            Self::AuthError(msg) => (StatusCode::UNAUTHORIZED, msg),
+            Self::E404(msg) => (StatusCode::NOT_FOUND, msg),
+            Self::WithStatus(status, msg) => (status, msg),
+            _ => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+        }
+    }
+}
+
 impl From<&str> for AppError {
     fn from(msg: &str) -> Self {
         Self::InternalError(msg.into())
@@ -52,5 +73,21 @@ impl From<()> for AppError {
 impl From<Box<dyn std::error::Error + Send + Sync>> for AppError {
     fn from(arg: Box<dyn std::error::Error + Send + Sync>) -> Self {
         AppError::InternalError(arg.to_string())
+    }
+}
+
+impl From<Box<dyn std::error::Error>> for AppError {
+    fn from(arg: Box<dyn std::error::Error>) -> Self {
+        AppError::InternalError(arg.to_string())
+    }
+}
+
+impl Clone for AppError {
+    fn clone(&self) -> Self {
+        AppError::from(self.to_string())
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = Self::from(source.to_string());
     }
 }

@@ -93,7 +93,7 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
                 .with_target(true)
                 .with_writer(web_file_appender)
                 .event_format(format.clone().compact())
-                .with_filter(filter::filter_fn(|metadata| metadata.target() == WEB_LOG)),
+                .with_filter(filter::filter_fn(|metadata| metadata.target() != API_LOG)),
         )
         .with(
             fmt::Layer::default()

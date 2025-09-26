@@ -1,0 +1,39 @@
+[package]
+name = "interfaces"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tracing = "0.1.41"
+axum = { version = "0.8.4", default-features = true }
+tower-http = { version = "0.6.6", features = [
+  "trace",
+  "catch-panic",
+  "timeout",
+  "add-extension",
+  "cors",
+  "fs",
+  "set-header",
+  "compression-full",
+] }
+hyper = "1.7.0"
+headers = "0.4.1"
+axum-extra = { version = "0.10.1", features = ["typed-header"] }
+http-body-util = "0.1.3"
+byte-unit = "5.1.6"
+axum-server = { version = "0.7.2", features = ["tls-rustls"] }
+
+serde = { version = "1.0.226", features = ["derive"] }
+serde_json = "1.0.145"
+serde_variant = "0.1.3"
+serde_yaml = "0.9.34-deprecated"
+
+# 系统依赖
+loggerx = { package = "logger", path = "../infrastructure/logger" }
+cachex = { package = "cache", path = "../infrastructure/cache" }
+configx = { package = "config", path = "../infrastructure/config" }
+commonx = { package = "common", path = "../common" }
+jsonwebtoken = "9.3.1"
+thiserror = "2.0.16"
+once_cell = "1.21.3"
+tokio = "1.47.1"

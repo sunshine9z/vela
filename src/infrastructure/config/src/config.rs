@@ -12,6 +12,7 @@ pub struct Config {
     pub cache: CacheConfig,
     pub snowgenera: SnowGenerator,
     pub database: DatabaseConfig,
+    pub auth: Auth,
 }
 
 impl Config {
@@ -44,6 +45,35 @@ pub struct Server {
     pub static_dir: String,
     pub web_dir: String,
     pub upload_dir: String,
+    pub ssl: Ssl,
+    pub middlewares: Middlewares,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Middlewares {
+    pub logger: Option<EnableMiddleware>,
+    pub catch_panic: Option<EnableMiddleware>,
+    pub timeout_request: Option<TimeoutMiddleware>,
+    pub limit_payload: Option<String>,
+    pub compression: Option<EnableMiddleware>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct EnableMiddleware {
+    pub enable: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct TimeoutMiddleware {
+    pub enable: bool,
+    pub timeout: u64,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Ssl {
+    pub enable: bool,
+    pub key: String,
+    pub cert: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -118,6 +148,35 @@ pub struct DatabaseConfig {
     pub dangerously_truncate: bool,
     #[serde(default = "default_false")]
     pub dangerously_recreate: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Auth {
+    /// JWT authentication config
+    pub jwt: JWT,
+}
+
+/// JWT configuration structure.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct JWT {
+    /// The location where JWT tokens are expected to be found during
+    /// authentication.
+    pub location: Option<JWTLocation>,
+    /// The secret key For JWT token
+    pub secret: String,
+    /// The expiration time for authentication tokens
+    pub expiration: i64,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(tag = "from")]
+pub enum JWTLocation {
+    /// Authenticate using a Bearer token.
+    Bearer,
+    /// Authenticate using a token passed as a query parameter.
+    Query { name: String },
+    /// Authenticate using a token stored in a cookie.
+    Cookie { name: String },
 }
 
 fn default_false() -> bool {

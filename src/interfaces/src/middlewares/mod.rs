@@ -1,0 +1,99 @@
+mod auth;
+mod operate_log;
+pub mod request_log;
+
+use std::{any::Any, time::Duration};
+
+use axum::{
+    Router,
+    extract::{DefaultBodyLimit, Request},
+    middleware,
+    response::{IntoResponse, Response},
+};
+use configx::APP_CONFIG;
+use hyper::StatusCode;
+use loggerx::{web_error, web_info};
+use tower_http::{
+    catch_panic::CatchPanicLayer,
+    compression::{CompressionLayer, DefaultPredicate, Predicate, predicate::NotForContentType},
+    cors::CorsLayer,
+    timeout::TimeoutLayer,
+};
+
+use crate::{
+    middlewares::{auth::check_permission_mid, operate_log::operate_log_fn_mid},
+    types::user_info::UserInfo,
+};
+
+#[derive(Debug, Clone, Default)]
+pub struct ReqCtx {
+    pub ip: String,
+    pub ori_uri: String,
+    pub path: String,
+    pub path_params: String,
+    pub method: String,
+}
+
+pub fn set_auth_middleware(router: Router) -> Router {
+    router
+        .layer(middleware::from_fn(operate_log_fn_mid))
+        .layer(middleware::from_fn(check_permission_mid))
+        // .layer(middleware::from_fn(req_info_fn_mid)) // 注入请求信息
+        .layer(middleware::from_extractor::<UserInfo>()) //从token中注入用户信息
+}
+
+pub fn set_common_middleware(mut router: Router) -> Router {
+    let server_config = APP_CONFIG.server.clone();
+    // CORS配置
+    router = router.layer(configure_cors());
+    // payload 限制
+    if let Some(limit) = server_config.middlewares.limit_payload {
+        if let Ok(size) = byte_unit::Byte::parse_str(&limit, true) {
+            router = router.layer(DefaultBodyLimit::max(size.as_u64() as usize));
+            web_info!(data = &limit, "[Middleware] Adding limit payload");
+        }
+    }
+    // Panic处理
+    router = router.layer(CatchPanicLayer::custom(handle_panic));
+
+    // 压缩
+    if let Some(compression) = server_config.middlewares.compression.clone() {
+        if compression.enable {
+            let predicate =
+                DefaultPredicate::new().and(NotForContentType::new("text/event-stream"));
+            router = router.layer(CompressionLayer::new().compress_when(predicate));
+            tracing::info!("[Middleware] Adding compression middleware");
+        }
+    }
+
+    // 超时
+    if let Some(time_request) = server_config.middlewares.timeout_request {
+        if time_request.enable {
+            router = router.layer(TimeoutLayer::new(Duration::from_millis(
+                time_request.timeout,
+            )));
+            tracing::info!("[Middleware] Adding timeout middleware");
+        }
+    }
+    router
+}
+
+pub fn parse_ip(req: &Request) -> String {
+    req.headers()
+        .get("x-forwarded-for")
+        .and_then(|h| h.to_str().ok())
+        .map(|ip| ip.split(',').next().unwrap_or("unknown").trim().to_owned())
+        .unwrap_or_else(|| "unknown".to_owned())
+}
+fn configure_cors() -> CorsLayer {
+    CorsLayer::new().allow_credentials(true)
+}
+
+fn handle_panic(err: Box<dyn Any + Send + 'static>) -> Response {
+    let err = err.downcast_ref::<String>().map_or_else(
+        || err.downcast_ref::<&str>().map_or("no error details", |s| s),
+        |s| s.as_str(),
+    );
+    web_error!(err, "server_panic");
+    (StatusCode::INTERNAL_SERVER_ERROR, "服务器错误".to_string()).into_response()
+}

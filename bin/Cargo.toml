@@ -12,3 +12,5 @@ loggerx = { package = "logger", path = "../src/infrastructure/logger" }
 cachex = { package = "cache", path = "../src/infrastructure/cache" }
 configx = { package = "config", path = "../src/infrastructure/config" }
 persistencex = { package = "persistence", path = "../src/infrastructure/persistence" }
+commonx = { package = "common", path = "../src/common" }
+interfacesx = { package = "interfaces", path = "../src/interfaces" }

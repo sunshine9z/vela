@@ -7,6 +7,27 @@ server:
   web_dir: data/web
   # The directory where the upload files will be served from.
   upload_dir: data/upload
+   # SSl configuration
+  ssl:
+    enable: false
+    key: data/ssl/key.pem
+    cert: data/ssl/cert.pem
+  middlewares:
+    logger:
+      enable: true
+    # when your code is panicked, the request still returns 500 status code.
+    catch_panic:
+      # Enable/Disable the middleware.
+      enable: true
+    # Timeout for incoming requests middleware. requests that take more time from the configuration will cute and 408 status code will returned.
+    timeout_request:
+      # Enable/Disable the middleware.
+      enable: false
+      # Duration time in milliseconds.
+      timeout: 60000
+    cors:
+      enable: true
+    limit_payload: 50mb
 
 logger:
   enable: true
@@ -50,3 +71,12 @@ database:
   dangerously_truncate: false
   # Recreating schema when application loaded.  This is a dangerous operation, make sure that you using this flag only on dev environments or test mode
   dangerously_recreate: false   
+
+# Authentication Configuration
+auth:
+  # JWT authentication
+  jwt:
+    # Secret key for token generation and verification
+    secret: arxWd8PS123rtkl32QVE4Mn6T89Sl
+    # Token expiration time in seconds
+    expiration: 604800 # 7 days
