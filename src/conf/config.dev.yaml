@@ -54,7 +54,7 @@ snowgenera:
   node_id: 1
 
 database:
-  uri: "mysql://root:12345678@localhost:3306/vela"
+  uri: mysql://root:12345678@localhost:3306/vela
   # When enabled, the sql query will be logged.
   enable_logging: true
   # Set the timeout duration when acquiring a connection.
