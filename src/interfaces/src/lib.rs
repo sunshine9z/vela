@@ -1,3 +1,4 @@
+pub mod controller;
 pub mod init;
 pub mod middlewares;
 pub mod resp;

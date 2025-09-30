@@ -10,9 +10,8 @@ use axum::{
     middleware,
     response::{IntoResponse, Response},
 };
-use configx::APP_CONFIG;
 use hyper::StatusCode;
-use loggerx::{web_error, web_info};
+use infrastructurex::{config::APP_CONFIG, web_error, web_info};
 use tower_http::{
     catch_panic::CatchPanicLayer,
     compression::{CompressionLayer, DefaultPredicate, Predicate, predicate::NotForContentType},
@@ -25,6 +24,8 @@ use crate::{
     types::user_info::UserInfo,
 };
 
+const MIDDLEWARE_NAME: &str = "[Middleware]";
+
 #[derive(Debug, Clone, Default)]
 pub struct ReqCtx {
     pub ip: String,
@@ -32,6 +33,10 @@ pub struct ReqCtx {
     pub path: String,
     pub path_params: String,
     pub method: String,
+}
+
+pub fn set_no_auth_middleware(router: Router) -> Router {
+    router
 }
 
 pub fn set_auth_middleware(router: Router) -> Router {
@@ -50,29 +55,27 @@ pub fn set_common_middleware(mut router: Router) -> Router {
     if let Some(limit) = server_config.middlewares.limit_payload {
         if let Ok(size) = byte_unit::Byte::parse_str(&limit, true) {
             router = router.layer(DefaultBodyLimit::max(size.as_u64() as usize));
-            web_info!(data = &limit, "[Middleware] Adding limit payload");
+            web_info!("{MIDDLEWARE_NAME} 添加payload限制{:?}", size);
         }
     }
     // Panic处理
     router = router.layer(CatchPanicLayer::custom(handle_panic));
-
     // 压缩
     if let Some(compression) = server_config.middlewares.compression.clone() {
         if compression.enable {
             let predicate =
                 DefaultPredicate::new().and(NotForContentType::new("text/event-stream"));
             router = router.layer(CompressionLayer::new().compress_when(predicate));
-            tracing::info!("[Middleware] Adding compression middleware");
+            web_info!("{MIDDLEWARE_NAME} 添加压缩中间件");
         }
     }
-
     // 超时
     if let Some(time_request) = server_config.middlewares.timeout_request {
         if time_request.enable {
             router = router.layer(TimeoutLayer::new(Duration::from_millis(
                 time_request.timeout,
             )));
-            tracing::info!("[Middleware] Adding timeout middleware");
+            web_info!("{MIDDLEWARE_NAME} 添加超时{}ms中间件", time_request.timeout);
         }
     }
     router

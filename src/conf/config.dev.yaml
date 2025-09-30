@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 36002
   host: 0.0.0.0
   # The directory where the static files will be served from.
   static_dir: data/static
@@ -22,7 +22,7 @@ server:
     # Timeout for incoming requests middleware. requests that take more time from the configuration will cute and 408 status code will returned.
     timeout_request:
       # Enable/Disable the middleware.
-      enable: false
+      enable: true
       # Duration time in milliseconds.
       timeout: 60000
     cors:
@@ -56,7 +56,7 @@ snowgenera:
 database:
   uri: mysql://root:12345678@localhost:3306/vela
   # When enabled, the sql query will be logged.
-  enable_logging: true
+  enable_logging: false
   # Set the timeout duration when acquiring a connection.
   connect_timeout: 60000
   # Set the idle duration before closing a connection.

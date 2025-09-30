@@ -1,10 +1,10 @@
 use std::time::Duration;
 
 use commonx::error::AppError;
-use configx::APP_CONFIG;
-use loggerx::web_info;
 use once_cell::sync::OnceCell;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+
+use crate::{config::APP_CONFIG, web_info};
 
 static DATABASE: OnceCell<DatabaseConnection> = OnceCell::new();
 

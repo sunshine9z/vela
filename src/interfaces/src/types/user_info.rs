@@ -1,8 +1,8 @@
 use axum::{RequestPartsExt, extract::FromRequestParts, http::request::Parts};
 use axum_extra::TypedHeader;
 use commonx::error::AppError;
-use configx::APP_CONFIG;
 use headers::{Authorization, authorization::Bearer};
+use infrastructurex::config::APP_CONFIG;
 use jsonwebtoken::{DecodingKey, EncodingKey, Validation, decode, errors::ErrorKind};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};

@@ -8,6 +8,7 @@ pub struct RespDataString(pub String);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiResponse<T> {
+    pub code: u16,
     pub data: T,
     pub message: String,
 }
@@ -16,19 +17,23 @@ impl<T> ApiResponse<T>
 where
     T: Serialize,
 {
-    pub fn new(data: T, message: String) -> Self {
-        Self { data, message }
+    pub fn new(code: StatusCode, data: T, message: String) -> Self {
+        Self {
+            code: code.as_u16(),
+            data,
+            message,
+        }
     }
     pub fn ok_with_data(data: T) -> Response {
-        (StatusCode::OK, Self::new(data, "操作成功".to_string())).into_response()
+        (
+            StatusCode::OK,
+            Self::new(StatusCode::OK, data, "操作成功".to_string()),
+        )
+            .into_response()
     }
 
     pub fn ok_with_data_and_msg(data: T, msg: impl Into<String>) -> Response {
-        (StatusCode::OK, Self::new(data, msg.into())).into_response()
-    }
-
-    pub fn bad_request(msg: impl Into<String>) -> Response {
-        ApiResponse::error_response(StatusCode::BAD_REQUEST, msg.into())
+        (StatusCode::OK, Self::new(StatusCode::OK, data, msg.into())).into_response()
     }
 
     pub fn from_result(result: Result<T, AppError>) -> Response
@@ -55,11 +60,22 @@ impl ApiResponse<()> {
     }
     // 统一的错误响应方法 - 返回 ApiResponse<EmptyData>
     pub fn error_response(status: StatusCode, message: String) -> Response {
-        (status, ApiResponse::new((), message)).into_response()
+        (status, ApiResponse::new(status, (), message)).into_response()
+    }
+    pub fn not_found(msg: impl Into<String>) -> Response {
+        ApiResponse::error_response(StatusCode::NOT_FOUND, msg.into())
     }
 
     pub fn ok() -> Response {
-        (StatusCode::OK, ApiResponse::new((), "操作成功".to_string())).into_response()
+        (
+            StatusCode::OK,
+            ApiResponse::new(StatusCode::OK, (), "操作成功".to_string()),
+        )
+            .into_response()
+    }
+
+    pub fn bad_request(msg: impl Into<String>) -> Response {
+        ApiResponse::error_response(StatusCode::BAD_REQUEST, msg.into())
     }
 }
 

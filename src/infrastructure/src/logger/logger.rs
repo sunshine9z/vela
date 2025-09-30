@@ -12,9 +12,10 @@ use tracing_subscriber::{
     fmt::{self, time::FormatTime},
 };
 
-use config::{APP_CONFIG, config::LogLevel};
-
-use crate::{API_LOG, MODULE_NAME, WEB_LOG};
+use crate::{
+    config::{APP_CONFIG, config::LogLevel},
+    logger::{API_LOG, MODULE_NAME},
+};
 
 #[derive(Debug, Clone)]
 pub struct LocalTimer;

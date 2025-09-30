@@ -1,22 +1,12 @@
 use std::{net::SocketAddr, str::FromStr, time::Duration};
 
-use axum::{
-    Router,
-    middleware::from_fn,
-    response::{IntoResponse, Response},
-};
+use axum::Router;
 use axum_server::tls_rustls::RustlsConfig;
 use commonx::error::AppError;
-use configx::APP_CONFIG;
-use loggerx::web_info;
-use tokio::signal::{self, unix::signal};
-use tower_http::services::ServeDir;
+use infrastructurex::{config::APP_CONFIG, web_info};
+use tokio::signal::{self};
 
-use crate::{
-    API_PATH_PRE,
-    middlewares::{request_log::request_log_fn_mid, set_auth_middleware, set_common_middleware},
-    routes::routes,
-};
+use crate::routes::init_routes;
 
 pub async fn start_server() -> Result<(), AppError> {
     let server_config = APP_CONFIG.server.clone();
@@ -27,7 +17,7 @@ pub async fn start_server() -> Result<(), AppError> {
         server_config.port
     );
 
-    let router = set_common_middleware(set_routes());
+    let router = init_routes();
     if server_config.ssl.enable {
         start_https_server(router, &addr).await?;
     } else {
@@ -35,17 +25,6 @@ pub async fn start_server() -> Result<(), AppError> {
     }
 
     Ok(())
-}
-
-fn set_routes() -> Router {
-    let server_config = APP_CONFIG.server.clone();
-    let static_dir = ServeDir::new(server_config.static_dir);
-    // let webdir = ServeDir::new(serverconfig.web_dir);
-    Router::new()
-        .nest_service("/static", static_dir)
-        // .nest_service("/", webdir)
-        .nest(API_PATH_PRE, set_auth_middleware(routes()))
-        .layer(from_fn(request_log_fn_mid))
 }
 
 async fn start_https_server(app: Router, addr: &str) -> Result<(), Box<dyn std::error::Error>> {

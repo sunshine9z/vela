@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex};
 
-use configx::APP_CONFIG;
 use once_cell::sync::Lazy;
 
 use commonx::snowflake_id::SnowflakeIdGenerator;
+
+use crate::config::APP_CONFIG;
 
 static ID_GENERATOR: Lazy<Arc<Mutex<SnowflakeIdGenerator>>> = Lazy::new(|| {
     let config = &APP_CONFIG.snowgenera;

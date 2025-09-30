@@ -3,11 +3,9 @@ pub mod redis;
 use std::sync::Arc;
 
 use commonx::error::AppError;
-use configx::APP_CONFIG;
-use loggerx::web_info;
 use once_cell::sync::OnceCell;
 
-use crate::redis::RedisCache;
+use crate::{cache::redis::RedisCache, config::APP_CONFIG, web_info};
 
 static MODULE_NAME: &str = "[cache]";
 

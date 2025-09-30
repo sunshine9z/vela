@@ -1,0 +1,30 @@
+[package]
+name = "infrastructure"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+once_cell = "1.21.3"
+commonx = { package = "common", path = "../common" }
+bb8 = "0.9.0"
+bb8-redis = "0.24.0"
+serde = "1.0.228"
+serde_yaml = "0.9.34"
+serde_variant = "0.1.3"
+tracing = "0.1.41"
+tracing-log = "0.2.0"
+tracing-subscriber = { version = "0.3.20", features = [
+  "env-filter",
+  "json",
+  "local-time",
+  "registry",
+] }
+tracing-appender = "0.2.3"
+chrono = "0.4.42"
+sea-orm = { version = "1.1.14", features = [
+  # "sqlx-postgres",
+  # "sqlx-sqlite",
+  "sqlx-mysql",
+  "runtime-tokio-rustls",
+  "macros",
+] }

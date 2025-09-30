@@ -1,6 +1,8 @@
+use std::time::Instant;
+
 use axum::{body::Body, extract::Request, middleware::Next, response::IntoResponse};
 use hyper::StatusCode;
-use loggerx::web_info;
+use infrastructurex::web_info;
 
 use crate::middlewares::parse_ip;
 
@@ -50,5 +52,17 @@ pub async fn request_log_fn_mid(
 
     // 重新构建请求
     let rebuilt_request = Request::from_parts(parts, Body::from(body_bytes));
-    Ok(next.run(rebuilt_request).await)
+
+    let now = Instant::now();
+    let res_end = next.run(rebuilt_request).await;
+    let duration = now.elapsed();
+    web_info!(
+        "ip:{} method:{} url:{} query:{} duration:{}",
+        ip,
+        method,
+        uri,
+        query,
+        duration.as_millis()
+    );
+    Ok(res_end)
 }

@@ -1,10 +1,9 @@
-use loggerx::web_info;
 use vela::app::App;
 
 #[tokio::main]
 async fn main() {
-    let _guards = loggerx::init().unwrap();
+    let _guards = infrastructurex::logger::init().unwrap();
 
-    web_info!("web_info test");
+    infrastructurex::web_info!("web_info test");
     App::run().await;
 }

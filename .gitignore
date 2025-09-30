@@ -1,5 +1,4 @@
 /target
 Cargo.lock
-logs/access.2025-09-24
-logs/access.2025-09-24-06
-logs/api.2025-09-24
+logs/*
+src/domain/user/src/lib.rs

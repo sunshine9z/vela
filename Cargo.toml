@@ -1,5 +1,11 @@
 [workspace]
 resolver = "2"
 
-
-members = ["bin", "src/common", "src/infrastructure/cache", "src/infrastructure/config", "src/infrastructure/persistence", "src/interfaces"]
+members = [
+  "bin",
+  "src/common",
+  "src/domain/user",
+  "src/infrastructure",
+  "src/interfaces",
+]
+exclude = ["db", "tools"]
