@@ -150,12 +150,7 @@ impl Into<Router> for RouterGroup {
         for p in expand_path {
             if let Some(method_router) = p.method_router.clone() {
                 router = router.route(&p.final_path, method_router);
-                web_info!(
-                    "[路由]:[{}]{} {:?}",
-                    p.method,
-                    p.final_path,
-                    p.method_router.clone()
-                );
+                web_info!("[路由]:[{}]{}", p.method, p.final_path);
             }
         }
         router
