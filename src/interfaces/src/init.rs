@@ -11,13 +11,14 @@ use crate::routes::init_routes;
 pub async fn start_server() -> Result<(), AppError> {
     let server_config = APP_CONFIG.server.clone();
     let addr = format!("{}:{}", server_config.host, server_config.port);
+
+    let router = init_routes();
+    web_info!("-3.1 加载路由...[ok]");
     web_info!(
-        "Server is running on {}:{}",
+        "-3.x 启动服务 {}:{}",
         server_config.host,
         server_config.port
     );
-
-    let router = init_routes();
     if server_config.ssl.enable {
         start_https_server(router, &addr).await?;
     } else {
@@ -27,7 +28,7 @@ pub async fn start_server() -> Result<(), AppError> {
     Ok(())
 }
 
-async fn start_https_server(app: Router, addr: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn start_https_server(route: Router, addr: &str) -> Result<(), Box<dyn std::error::Error>> {
     let server_config = APP_CONFIG.server.clone();
     let config = RustlsConfig::from_pem_file(server_config.ssl.cert, server_config.ssl.key)
         .await
@@ -48,7 +49,7 @@ async fn start_https_server(app: Router, addr: &str) -> Result<(), Box<dyn std::
     tracing::info!("启动https服务: {}", addr);
     axum_server::bind_rustls(socket_addr, config)
         .handle(handle)
-        .serve(app.into_make_service())
+        .serve(route.into_make_service())
         .await
         .map_err(|e| format!("HTTPS server error: {}", e))?;
     Ok(())

@@ -1,5 +1,4 @@
 use infrastructurex::cache::CacheManager;
-use infrastructurex::container::load_domains;
 use infrastructurex::persistence::init::init_db;
 use infrastructurex::web_info;
 use interfacesx::init::start_server;
@@ -24,9 +23,7 @@ impl App {
         web_info!("{MODULE_NAME}: 1. 缓存初始化 ... [成功]");
         init_db().await.unwrap();
         web_info!("{MODULE_NAME}: 2. 数据库初始化 ... [成功]");
-        load_domains().await.unwrap();
-        web_info!("{MODULE_NAME}: 3. 加载领域模型 ... [成功]");
-        web_info!("{MODULE_NAME}: 4. 启动web服务 ...");
+        web_info!("{MODULE_NAME}: 3. 启动web服务 ...");
         start_server().await.unwrap();
     }
 }

@@ -74,6 +74,7 @@ impl_error_from!(
     serde_json::Error,
     bb8_redis::redis::RedisError,
     bb8::RunError<bb8_redis::redis::RedisError>,
+    Box<dyn std::error::Error>,
 );
 
 impl From<&str> for AppError {
