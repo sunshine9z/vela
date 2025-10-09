@@ -55,9 +55,30 @@ impl IntoStatusTuple for AppError {
     }
 }
 
+// 错误转换宏
+macro_rules! impl_error_from {
+    ($($error_type:ty),* $(,)?) => {
+        $(
+            impl From<$error_type> for AppError {
+                fn from(err: $error_type) -> Self {
+                     AppError::InternalError(err.to_string())
+                }
+            }
+        )*
+    };
+}
+
+// 标准错误类型转换
+impl_error_from!(
+    std::io::Error,
+    serde_json::Error,
+    bb8_redis::redis::RedisError,
+    bb8::RunError<bb8_redis::redis::RedisError>,
+);
+
 impl From<&str> for AppError {
     fn from(msg: &str) -> Self {
-        Self::InternalError(msg.into())
+        AppError::InternalError(msg.into())
     }
 }
 impl From<String> for AppError {
@@ -72,12 +93,6 @@ impl From<()> for AppError {
 }
 impl From<Box<dyn std::error::Error + Send + Sync>> for AppError {
     fn from(arg: Box<dyn std::error::Error + Send + Sync>) -> Self {
-        AppError::InternalError(arg.to_string())
-    }
-}
-
-impl From<Box<dyn std::error::Error>> for AppError {
-    fn from(arg: Box<dyn std::error::Error>) -> Self {
         AppError::InternalError(arg.to_string())
     }
 }

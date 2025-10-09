@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use commonx::error::AppError;
 use once_cell::sync::OnceCell;
+use serde::Serialize;
 
 use crate::{cache::redis::RedisCache, config::APP_CONFIG, web_info};
 
@@ -62,6 +63,15 @@ impl Cache {
                 "未知的缓存类型: {}",
                 config.cache_type
             ))),
+        }
+    }
+
+    pub async fn set_value_ex<T>(&self, k: &str, value: &T, t: i32) -> Result<bool, AppError>
+    where
+        T: Serialize + Sync,
+    {
+        match self {
+            Cache::Redis(cache) => cache.set_value_ex(k, value, t).await,
         }
     }
 }
