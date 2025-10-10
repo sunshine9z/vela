@@ -6,6 +6,7 @@ use infrastructurex::config::APP_CONFIG;
 use jsonwebtoken::{DecodingKey, EncodingKey, Validation, decode, errors::ErrorKind};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 pub static KEYS: Lazy<Keys> = Lazy::new(|| {
     let secret = &APP_CONFIG.auth.jwt.secret;
@@ -93,4 +94,11 @@ pub async fn get_bear_token(parts: &mut Parts) -> Result<String, AppError> {
     // Decode the user data
     let bearer_data: &str = bearer.token();
     Ok(bearer_data.to_owned())
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
+pub struct ClientInfo {
+    pub client_id: String,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
 }

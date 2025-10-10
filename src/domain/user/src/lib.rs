@@ -1,24 +1,26 @@
 pub mod entity;
 use captcha_rust::Captcha;
 use entity::captcha::CaptchaImage;
+use std::future::Future;
 
-use async_trait::async_trait;
 use infrastructurex::{cache::CacheManager, web_info};
 
 use crate::entity::captcha::CaptchaCacheInfo;
 
-#[async_trait]
-pub trait UserDomain {
-    async fn gen_captcha(client_id: String) -> CaptchaImage;
+pub trait UserDomainTrait {
+    fn gen_captcha(
+        &self,
+        client_id: String,
+        width: u32,
+        height: u32,
+    ) -> impl Future<Output = CaptchaImage>;
 }
 
-struct UserDomainImpl {}
+pub struct UserDomainImpl {}
 
-#[async_trait]
-impl UserDomain for UserDomainImpl {
-    async fn gen_captcha(client_id: String) -> CaptchaImage {
-        let captcha = Captcha::new(5, 130, 40);
-
+impl UserDomainTrait for UserDomainImpl {
+    async fn gen_captcha(&self, client_id: String, width: u32, height: u32) -> CaptchaImage {
+        let captcha = Captcha::new(5, width, height);
         let cacheinfo = CaptchaCacheInfo {
             client_id: client_id.clone(),
             cache_text: captcha.text.clone(),
@@ -35,6 +37,6 @@ impl UserDomain for UserDomainImpl {
     }
 }
 
-pub fn new_user_domain() -> impl UserDomain {
+pub fn new_user_domain() -> UserDomainImpl {
     UserDomainImpl {}
 }

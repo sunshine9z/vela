@@ -11,9 +11,9 @@ use crate::routes::init_routes;
 pub async fn start_server() -> Result<(), AppError> {
     let server_config = APP_CONFIG.server.clone();
     let addr = format!("{}:{}", server_config.host, server_config.port);
-
     let router = init_routes();
     web_info!("-3.1 加载路由...[ok]");
+    
     web_info!(
         "-3.x 启动服务 {}:{}",
         server_config.host,
@@ -46,7 +46,7 @@ async fn start_https_server(route: Router, addr: &str) -> Result<(), Box<dyn std
         }
     });
 
-    tracing::info!("启动https服务: {}", addr);
+    web_info!("启动https服务: {}", addr);
     axum_server::bind_rustls(socket_addr, config)
         .handle(handle)
         .serve(route.into_make_service())

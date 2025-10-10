@@ -131,14 +131,14 @@ impl RouterGroup {
         last_level_paths
     }
 
-    pub fn print_all_paths(&self) {
-        for sub_path_data in self.sub_paths.values() {
-            if sub_path_data.is_last_level() {
-                web_info!("{}", sub_path_data.final_path);
-            }
-            sub_path_data.print_all_paths();
-        }
-    }
+    // pub fn print_all_paths(&self) {
+    //     for sub_path_data in self.sub_paths.values() {
+    //         if sub_path_data.is_last_level() {
+    //             web_info!("{}", sub_path_data.final_path);
+    //         }
+    //         sub_path_data.print_all_paths();
+    //     }
+    // }
 }
 
 impl Into<Router> for RouterGroup {

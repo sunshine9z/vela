@@ -75,6 +75,8 @@ impl_error_from!(
     bb8_redis::redis::RedisError,
     bb8::RunError<bb8_redis::redis::RedisError>,
     Box<dyn std::error::Error>,
+    validator::ValidationErrors,
+    axum::extract::rejection::QueryRejection
 );
 
 impl From<&str> for AppError {
