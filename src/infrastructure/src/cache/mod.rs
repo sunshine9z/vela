@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use commonx::error::AppError;
 use once_cell::sync::OnceCell;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{cache::redis::RedisCache, config::APP_CONFIG, web_info};
 
@@ -24,7 +24,7 @@ impl CacheManager {
             .map_err(|e| AppError::CacheInitError(format!("初始化全局缓存失败: {:?}", e)))?;
         Ok(())
     }
-    pub async fn instance() -> Arc<Cache> {
+    pub fn instance() -> Arc<Cache> {
         GLOBAL_CACHE
             .get()
             .cloned()
@@ -72,6 +72,15 @@ impl Cache {
     {
         match self {
             Cache::Redis(cache) => cache.set_value_ex(k, value, t).await,
+        }
+    }
+
+    pub async fn get_oneuse_value<T>(&self, k: &str) -> Result<T, AppError>
+    where
+        T: Serialize + for<'de> Deserialize<'de> + Sync,
+    {
+        match self {
+            Cache::Redis(cache) => cache.get_oneuse_value(k).await,
         }
     }
 }

@@ -7,6 +7,7 @@ use std::{any::Any, time::Duration};
 use axum::{
     Router,
     extract::{DefaultBodyLimit, Request},
+    http::HeaderName,
     middleware,
     response::{IntoResponse, Response},
 };
@@ -16,6 +17,8 @@ use tower_http::{
     catch_panic::CatchPanicLayer,
     compression::{CompressionLayer, DefaultPredicate, Predicate, predicate::NotForContentType},
     cors::CorsLayer,
+    limit::RequestBodyLimitLayer,
+    request_id::{MakeRequestUuid, SetRequestIdLayer},
     timeout::TimeoutLayer,
 };
 
@@ -49,15 +52,24 @@ pub fn set_auth_middleware(router: Router) -> Router {
 
 pub fn set_common_middleware(mut router: Router) -> Router {
     let server_config = APP_CONFIG.server.clone();
-    // CORS配置
-    router = router.layer(configure_cors());
+
     // payload 限制
     if let Some(limit) = server_config.middlewares.limit_payload {
         if let Ok(size) = byte_unit::Byte::parse_str(&limit, true) {
-            router = router.layer(DefaultBodyLimit::max(size.as_u64() as usize));
+            // 1. 禁用默认请求体限制，改用自定义限制（10MB = 10 * 1024 * 1024 字节）
+            router = router
+                .layer(DefaultBodyLimit::disable())
+                .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024));
             web_info!("{MIDDLEWARE_NAME} 添加payload限制{:?}", size);
         }
     }
+    // CORS配置
+    router = router.layer(
+        CorsLayer::new()
+            .allow_origin(tower_http::cors::Any)
+            .allow_methods(tower_http::cors::Any)
+            .allow_headers(tower_http::cors::Any),
+    );
     // Panic处理
     router = router.layer(CatchPanicLayer::custom(handle_panic));
     // 压缩
@@ -78,6 +90,12 @@ pub fn set_common_middleware(mut router: Router) -> Router {
             web_info!("{MIDDLEWARE_NAME} 添加超时{}ms中间件", time_request.timeout);
         }
     }
+    // 需要设置一个请求头的键名，一般叫x-request-id
+    router = router.layer(SetRequestIdLayer::new(
+        HeaderName::from_static("x-request-id"),
+        MakeRequestUuid,
+    ));
+
     router
 }
 
@@ -85,11 +103,14 @@ pub fn parse_ip(req: &Request) -> String {
     req.headers()
         .get("x-forwarded-for")
         .and_then(|h| h.to_str().ok())
-        .map(|ip| ip.split(',').next().unwrap_or("unknown").trim().to_owned())
-        .unwrap_or_else(|| "unknown".to_owned())
-}
-fn configure_cors() -> CorsLayer {
-    CorsLayer::new().allow_credentials(true)
+        .map(|ip| {
+            ip.split(',')
+                .next()
+                .unwrap_or("unknown IP")
+                .trim()
+                .to_string()
+        })
+        .unwrap_or_else(|| "unknown IP".to_string())
 }
 
 fn handle_panic(err: Box<dyn Any + Send + 'static>) -> Response {

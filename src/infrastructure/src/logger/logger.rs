@@ -83,13 +83,6 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
         .with(EnvFilter::from_default_env().add_directive(get_level.into()))
         .with(
             fmt::Layer::default()
-                .with_ansi(true)
-                .with_target(true)
-                .with_writer(console_non_blocking)
-                .event_format(format.clone().pretty()),
-        )
-        .with(
-            fmt::Layer::default()
                 .with_ansi(false)
                 .with_target(true)
                 .with_writer(web_file_appender)
@@ -103,6 +96,13 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
                 .with_writer(api_file_appender)
                 .event_format(format.clone().compact())
                 .with_filter(filter::filter_fn(|metadata| metadata.target() == API_LOG)),
+        )
+        .with(
+            fmt::Layer::default()
+                .with_ansi(true)
+                .with_target(true)
+                .with_writer(console_non_blocking)
+                .event_format(format.clone().pretty()),
         );
     tracing::subscriber::set_global_default(subscriber)?;
     info!("{MODULE_NAME}: 日志初始化完成");

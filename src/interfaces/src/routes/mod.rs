@@ -2,7 +2,10 @@ mod router_group;
 mod sys;
 use axum::{Router, middleware::from_fn, response::IntoResponse};
 use infrastructurex::config::APP_CONFIG;
-use tower_http::services::ServeDir;
+use tower_http::{
+    services::ServeDir,
+    trace::{DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer},
+};
 
 use crate::{
     API_PATH_PRE,
@@ -34,8 +37,17 @@ fn set_routes() -> Router {
         // .nest_service("/", webdir)
         .nest(API_PATH_PRE, set_no_auth_middleware(white_routers()))
         .nest(API_PATH_PRE, set_auth_middleware(routes()))
-        .fallback(handle_404)
         .layer(from_fn(request_log_fn_mid))
+        // 3. 请求跟踪日志（记录请求详情，便于排查问题）
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().include_headers(true)) // 记录请求头
+                .on_request(DefaultOnRequest::new().level(tracing::Level::INFO)) // 请求开始日志
+                .on_response(DefaultOnResponse::new().level(tracing::Level::INFO)) // 响应日志（含耗时）
+                .on_failure(DefaultOnFailure::new().level(tracing::Level::ERROR)), // 失败日志
+        )
+        .with_state(()) // Axum 0.8+ 必需：明确状态（空状态用 ()）
+        .fallback(handle_404)
 }
 
 pub fn init_routes() -> Router {

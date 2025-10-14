@@ -5,7 +5,7 @@ use axum::{
 use infrastructurex::web_info;
 
 use crate::{
-    controller::user::get_captcha,
+    controller::user::{get_captcha, login},
     resp::ApiResponse,
     routes::router_group::{RouterGroup, WebPathMethod},
 };
@@ -47,12 +47,7 @@ pub fn router_sys_white() -> RouterGroup {
         .nest(
             "/auth",
             RouterGroup::new()
-                .route(
-                    "/login",
-                    WebPathMethod::Post,
-                    Some("用户登录"),
-                    post(|| async { "auth login" }),
-                )
+                .route("/login", WebPathMethod::Post, Some("用户登录"), post(login))
                 .route(
                     "/get_captcha",
                     WebPathMethod::Get,

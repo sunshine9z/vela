@@ -9,8 +9,11 @@ pub struct RespDataString(pub String);
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiResponse<T> {
     pub code: u16,
-    pub data: T,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data: Option<T>,
     pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    request_id: Option<String>,
 }
 
 impl<T> ApiResponse<T>
@@ -20,8 +23,9 @@ where
     pub fn new(code: StatusCode, data: T, message: String) -> Self {
         Self {
             code: code.as_u16(),
-            data,
+            data: Some(data),
             message,
+            request_id: None,
         }
     }
     pub fn ok_with_data(data: T) -> Response {

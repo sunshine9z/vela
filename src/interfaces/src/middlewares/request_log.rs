@@ -4,7 +4,7 @@ use axum::{body::Body, extract::Request, middleware::Next, response::IntoRespons
 use hyper::StatusCode;
 use infrastructurex::web_info;
 
-use crate::middlewares::parse_ip;
+use crate::middlewares::{ReqCtx, parse_ip};
 
 pub async fn request_log_fn_mid(
     req: Request,
@@ -51,18 +51,15 @@ pub async fn request_log_fn_mid(
     );
 
     // 重新构建请求
-    let rebuilt_request = Request::from_parts(parts, Body::from(body_bytes));
-
-    let now = Instant::now();
+    let mut rebuilt_request = Request::from_parts(parts, Body::from(body_bytes));
+    let req_ctx = ReqCtx {
+        ip: ip.clone(),
+        ori_uri: uri.to_string(),
+        path: uri.path().to_string(),
+        path_params: uri.path().to_string(),
+        method: method.clone(),
+    };
+    rebuilt_request.extensions_mut().insert(req_ctx);
     let res_end = next.run(rebuilt_request).await;
-    let duration = now.elapsed();
-    web_info!(
-        "ip:{} method:{} url:{} query:{} duration:{}",
-        ip,
-        method,
-        uri,
-        query,
-        duration.as_millis()
-    );
     Ok(res_end)
 }

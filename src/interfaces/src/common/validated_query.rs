@@ -2,10 +2,9 @@ use axum::{
     extract::{FromRequestParts, Query},
     http::request::Parts,
 };
+use commonx::error::AppError;
 use serde::de::DeserializeOwned;
 use validator::Validate;
-
-use crate::error::AppError;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VQuery<T>(pub T);

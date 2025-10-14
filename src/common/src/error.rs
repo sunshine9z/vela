@@ -30,6 +30,9 @@ pub enum AppError {
     CacheInitError(String),
     #[error("内部错误(500), redis错误: {0}")]
     RedisError(String),
+
+    #[error("内部错误(500), {0}")]
+    CacheNotFoundError(String),
     // 内部错误-数据库错误
     #[error("内部错误(500), 错误信息: {0}")]
     DBError(String),
@@ -76,7 +79,9 @@ impl_error_from!(
     bb8::RunError<bb8_redis::redis::RedisError>,
     Box<dyn std::error::Error>,
     validator::ValidationErrors,
-    axum::extract::rejection::QueryRejection
+    axum::extract::rejection::QueryRejection,
+    axum::extract::rejection::JsonRejection,
+    axum::extract::rejection::MissingJsonContentType
 );
 
 impl From<&str> for AppError {

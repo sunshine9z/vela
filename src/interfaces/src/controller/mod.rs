@@ -1,3 +1,4 @@
+use infrastructurex::cache::CacheManager;
 use once_cell::sync::Lazy;
 use userDomain::{UserDomainImpl, new_user_domain};
 
@@ -8,4 +9,4 @@ pub mod user;
 static MODULE_NAME: &str = "[UserController]";
 
 pub static USER_CONTROLLER: Lazy<UserController<UserDomainImpl>> =
-    Lazy::new(|| UserController::new(new_user_domain()));
+    Lazy::new(|| UserController::new(new_user_domain(CacheManager::instance())));

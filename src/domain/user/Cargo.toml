@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 infrastructurex = { package = "infrastructure", path = "../../infrastructure" }
+commonx = { package = "common", path = "../../common" }
 
 
 async-trait = "0.1.89"

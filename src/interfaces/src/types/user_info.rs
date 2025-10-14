@@ -102,3 +102,16 @@ pub struct ClientInfo {
     pub width: Option<u32>,
     pub height: Option<u32>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
+pub struct LoginReq {
+    pub username: String,
+    pub password: String,
+    pub client_id: String,
+    pub captcha: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoginResp {
+    pub token: String,
+}

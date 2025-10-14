@@ -6,7 +6,7 @@ use bb8_redis::{
     redis::{AsyncCommands, RedisResult},
 };
 use commonx::error::AppError;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct RedisCache {
@@ -36,6 +36,17 @@ impl RedisCache {
         self.set_string_ex(k, &value_str, t).await
     }
 
+    pub async fn get_oneuse_value<T>(&self, k: &str) -> Result<T, AppError>
+    where
+        T: Serialize + for<'de> Deserialize<'de>,
+    {
+        let result = self.get_value(k).await;
+        if result.is_ok() {
+            let _ = self.remove(k).await;
+        }
+        result
+    }
+
     pub async fn set_string_ex(&self, k: &str, v: &str, t: i32) -> Result<bool, AppError> {
         let key = self.get_namespaced_key(k).await;
         let mut conn = self.pool.get().await?;
@@ -50,5 +61,29 @@ impl RedisCache {
         } else {
             format!("{}:{}", namespace, key)
         }
+    }
+
+    pub async fn get_value<T>(&self, k: &str) -> Result<T, AppError>
+    where
+        T: Serialize + for<'de> Deserialize<'de>,
+    {
+        let value_str = self.get_string(k).await?;
+        Ok(serde_json::from_str(&value_str)?)
+    }
+
+    pub async fn get_string(&self, k: &str) -> Result<String, AppError> {
+        let key = self.get_namespaced_key(k).await;
+        let mut conn = self.pool.get().await?;
+        let result: Option<String> = conn.get(&key).await?;
+        result
+            .ok_or_else(|| AppError::CacheNotFoundError(format!("数据不存在: {}", key)))
+            .into()
+    }
+
+    pub async fn remove(&self, k: &str) -> Result<usize, AppError> {
+        let key = self.get_namespaced_key(k).await;
+        let mut conn = self.pool.get().await?;
+        let result: usize = conn.del(&key).await?;
+        Ok(result)
     }
 }
