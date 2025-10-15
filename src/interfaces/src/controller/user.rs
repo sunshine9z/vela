@@ -21,7 +21,7 @@ pub async fn get_captcha(VQuery(arg): VQuery<ClientInfo>) -> impl IntoResponse {
 pub async fn login(header: HeaderMap, VJson(arg): VJson<LoginReq>) -> impl IntoResponse {
     match USER_CONTROLLER.login(header, arg).await {
         Ok(resp) => ApiResponse::ok_with_data(resp),
-        Err(err) => err.into_response(),
+        Err(err) => ApiResponse::<()>::from_error(err),
     }
 }
 

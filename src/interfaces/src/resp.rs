@@ -20,10 +20,10 @@ impl<T> ApiResponse<T>
 where
     T: Serialize,
 {
-    pub fn new(code: StatusCode, data: T, message: String) -> Self {
+    pub fn new(code: StatusCode, data: Option<T>, message: String) -> Self {
         Self {
             code: code.as_u16(),
-            data: Some(data),
+            data,
             message,
             request_id: None,
         }
@@ -31,13 +31,17 @@ where
     pub fn ok_with_data(data: T) -> Response {
         (
             StatusCode::OK,
-            Self::new(StatusCode::OK, data, "操作成功".to_string()),
+            Self::new(StatusCode::OK, Some(data), "操作成功".to_string()),
         )
             .into_response()
     }
 
     pub fn ok_with_data_and_msg(data: T, msg: impl Into<String>) -> Response {
-        (StatusCode::OK, Self::new(StatusCode::OK, data, msg.into())).into_response()
+        (
+            StatusCode::OK,
+            Self::new(StatusCode::OK, Some(data), msg.into()),
+        )
+            .into_response()
     }
 
     pub fn from_result(result: Result<T, AppError>) -> Response
@@ -46,16 +50,23 @@ where
     {
         match result {
             Ok(data) => Self::ok_with_data(data),
-            Err(err) => Self::from_error(err),
+            Err(err) => ApiResponse::<()>::from_error(err),
         }
     }
-    pub fn from_error(err: AppError) -> Response {
+}
+
+impl From<AppError> for ApiResponse<()> {
+    fn from(err: AppError) -> ApiResponse<()> {
         let (status, message) = err.into_status_tuple();
-        ApiResponse::error_response(status, message)
+        ApiResponse::new(status, None::<()>, message)
     }
 }
 
 impl ApiResponse<()> {
+    pub fn from_error(err: AppError) -> Response {
+        let (status, message) = err.into_status_tuple();
+        ApiResponse::error_response(status, message)
+    }
     pub fn from_empty_result(result: Result<(), AppError>) -> Response {
         match result {
             Ok(()) => Self::ok(),
@@ -64,7 +75,7 @@ impl ApiResponse<()> {
     }
     // 统一的错误响应方法 - 返回 ApiResponse<EmptyData>
     pub fn error_response(status: StatusCode, message: String) -> Response {
-        (status, ApiResponse::new(status, (), message)).into_response()
+        (status, ApiResponse::new(status, None::<()>, message)).into_response()
     }
     pub fn not_found(msg: impl Into<String>) -> Response {
         ApiResponse::error_response(StatusCode::NOT_FOUND, msg.into())
@@ -73,7 +84,7 @@ impl ApiResponse<()> {
     pub fn ok() -> Response {
         (
             StatusCode::OK,
-            ApiResponse::new(StatusCode::OK, (), "操作成功".to_string()),
+            ApiResponse::new(StatusCode::OK, None::<()>, "操作成功".to_string()),
         )
             .into_response()
     }

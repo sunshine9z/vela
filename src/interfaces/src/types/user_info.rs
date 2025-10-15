@@ -8,6 +8,8 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
+use crate::resp::ApiResponse;
+
 pub static KEYS: Lazy<Keys> = Lazy::new(|| {
     let secret = &APP_CONFIG.auth.jwt.secret;
     Keys::new(secret.as_bytes())
@@ -48,7 +50,7 @@ impl<S> FromRequestParts<S> for UserInfo
 where
     S: Send + Sync,
 {
-    type Rejection = AppError;
+    type Rejection = ApiResponse<()>;
     /// 将用户信息注入request
     fn from_request_parts(
         parts: &mut Parts,
@@ -61,14 +63,20 @@ where
                     Ok(token) => token,
                     Err(err) => match err.kind() {
                         ErrorKind::InvalidToken => {
-                            return Err(AppError::AuthError("token错误,请重新登录".to_string()));
+                            return Err(
+                                AppError::AuthError("token错误,请重新登录".to_string()).into()
+                            );
                         }
                         ErrorKind::ExpiredSignature => {
-                            return Err(AppError::AuthError("token过期,请重新登录".to_string()));
+                            return Err(
+                                AppError::AuthError("token过期,请重新登录".to_string()).into()
+                            );
                         }
                         _ => {
                             tracing::info!("AuthError:{:?}", err);
-                            return Err(AppError::AuthError("token错误,请重新登录".to_string()));
+                            return Err(
+                                AppError::AuthError("token错误,请重新登录".to_string()).into()
+                            );
                         }
                     },
                 };
@@ -105,7 +113,9 @@ pub struct ClientInfo {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
 pub struct LoginReq {
+    #[validate(length(min = 6, max = 20))]
     pub username: String,
+    #[validate(length(min = 6, max = 20))]
     pub password: String,
     pub client_id: String,
     pub captcha: String,

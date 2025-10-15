@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = { version = "0.8.4", default-features = true }
 thiserror = "2.0.16"
 hyper = "1.7.0"
 tracing = "0.1.41"

@@ -1,4 +1,3 @@
-use axum::response::IntoResponse;
 use hyper::StatusCode;
 use thiserror::Error;
 
@@ -38,13 +37,16 @@ pub enum AppError {
     DBError(String),
     #[error("内部错误(500), 错误信息: {0}")]
     InternalError(String),
+
+    #[error("内部错误(500), 校验错误: {0}")]
+    ValidationError(String),
 }
 
-impl IntoResponse for AppError {
-    fn into_response(self) -> axum::response::Response {
-        self.into_status_tuple().into_response()
-    }
-}
+// impl IntoResponse for AppError {
+//     fn into_response(self) -> axum::response::Response {
+//         self.into_status_tuple().into_response()
+//     }
+// }
 
 impl IntoStatusTuple for AppError {
     fn into_status_tuple(self) -> (StatusCode, String) {
@@ -53,6 +55,7 @@ impl IntoStatusTuple for AppError {
             Self::AuthError(msg) => (StatusCode::UNAUTHORIZED, msg),
             Self::E404(msg) => (StatusCode::NOT_FOUND, msg),
             Self::WithStatus(status, msg) => (status, msg),
+            Self::ValidationError(msg) => (StatusCode::BAD_REQUEST, msg),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
         }
     }
@@ -78,10 +81,6 @@ impl_error_from!(
     bb8_redis::redis::RedisError,
     bb8::RunError<bb8_redis::redis::RedisError>,
     Box<dyn std::error::Error>,
-    validator::ValidationErrors,
-    axum::extract::rejection::QueryRejection,
-    axum::extract::rejection::JsonRejection,
-    axum::extract::rejection::MissingJsonContentType
 );
 
 impl From<&str> for AppError {
