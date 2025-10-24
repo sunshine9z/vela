@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use axum::{body::Body, extract::Request, middleware::Next, response::IntoResponse};
 use hyper::StatusCode;
 use infrastructurex::web_info;
@@ -19,10 +17,10 @@ pub async fn request_log_fn_mid(
     // let path = uri.path();
     let query = uri.query().unwrap_or("");
 
-    // let user_agent = parts
-    //     .headers
-    //     .get(USER_AGENT)
-    //     .map_or("", |h| h.to_str().unwrap_or(""));
+    let user_agent = parts
+        .headers
+        .get("user-agent")
+        .map_or("", |h| h.to_str().unwrap_or(""));
 
     // let content_type = parts
     //     .headers
@@ -49,16 +47,17 @@ pub async fn request_log_fn_mid(
             body_content.to_string()
         }
     );
-
-    // 重新构建请求
-    let mut rebuilt_request = Request::from_parts(parts, Body::from(body_bytes));
     let req_ctx = ReqCtx {
         ip: ip.clone(),
         ori_uri: uri.to_string(),
         path: uri.path().to_string(),
         path_params: uri.path().to_string(),
         method: method.clone(),
+        // user_agent: user_agent.to_string(),
     };
+
+    // 重新构建请求
+    let mut rebuilt_request = Request::from_parts(parts, Body::from(body_bytes));
     rebuilt_request.extensions_mut().insert(req_ctx);
     let res_end = next.run(rebuilt_request).await;
     Ok(res_end)

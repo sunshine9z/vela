@@ -1,67 +1,81 @@
 // pub async fn gen_captcha(arg: ClientInfo) -> CaptchaImage {}
 
-use axum::response::IntoResponse;
+use axum::{Extension, response::IntoResponse};
 use commonx::error::AppError;
-use hyper::HeaderMap;
-use infrastructurex::web_info;
-use userDomain::{UserDomainTrait, entity::captcha::CaptchaImage};
-
-use crate::{
-    MODULE_NAME,
-    common::{validated_json::VJson, validated_query::VQuery},
-    controller::USER_CONTROLLER,
-    resp::ApiResponse,
-    types::user_info::{ClientInfo, LoginReq, LoginResp},
+use infrastructurex::persistence::id_gen::gen_id;
+use userDomain::{
+    api::{dto::auth::AuthDto, traits::UserDomainTrait},
+    entity::captcha::CaptchaImage,
 };
 
-pub async fn get_captcha(VQuery(arg): VQuery<ClientInfo>) -> impl IntoResponse {
-    ApiResponse::ok_with_data(USER_CONTROLLER.gen_captcha(arg).await)
+use crate::{
+    common::{jwt::authorize, validated_json::VJson, validated_query::VQuery},
+    controller::USER_CONTROLLER,
+    middlewares::ReqCtx,
+    resp::ApiResponse,
+    types::{
+        auth_jwt::Claims,
+        user_info::{ClientInfoReq, LoginReq, LoginResp},
+    },
+};
+
+pub async fn get_captcha(VQuery(arg): VQuery<ClientInfoReq>) -> impl IntoResponse {
+    ApiResponse::from_result(USER_CONTROLLER.gen_captcha(arg).await)
 }
 
-pub async fn login(header: HeaderMap, VJson(arg): VJson<LoginReq>) -> impl IntoResponse {
-    match USER_CONTROLLER.login(header, arg).await {
-        Ok(resp) => ApiResponse::ok_with_data(resp),
-        Err(err) => ApiResponse::<()>::from_error(err),
-    }
+pub async fn login(
+    Extension(req_ctx): Extension<ReqCtx>,
+    VJson(arg): VJson<LoginReq>,
+) -> impl IntoResponse {
+    ApiResponse::from_result(USER_CONTROLLER.login(req_ctx, arg).await)
 }
 
 pub trait UserControllerTrait {
-    async fn gen_captcha(&self, client_info: ClientInfo) -> CaptchaImage;
-    async fn login(&self, header: HeaderMap, args: LoginReq) -> Result<LoginResp, AppError>;
+    async fn gen_captcha(&self, client_info: ClientInfoReq) -> Result<CaptchaImage, AppError>;
+    async fn login(&self, req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError>;
 }
 
-pub struct UserController<T: UserDomainTrait> {
+pub struct UserController<T: UserDomainTrait + Sync + Send> {
     user_domain: T,
 }
 
-impl<T: UserDomainTrait> UserControllerTrait for UserController<T> {
-    async fn gen_captcha(&self, client_id: ClientInfo) -> CaptchaImage {
+impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T> {
+    async fn gen_captcha(&self, client_id: ClientInfoReq) -> Result<CaptchaImage, AppError> {
         let width = client_id.width.unwrap_or(100);
         let height = client_id.height.unwrap_or(40);
         self.user_domain
             .gen_captcha(client_id.client_id, width, height)
             .await
+            .map_err(|e| e.into())
     }
-    async fn login(&self, header: HeaderMap, args: LoginReq) -> Result<LoginResp, AppError> {
-        let captcha_info = self.user_domain.get_captcha(args.client_id.clone()).await?;
-        web_info!(
-            "{MODULE_NAME}获取验证码:{}:{}",
-            args.client_id.clone(),
-            captcha_info.cache_text
-        );
+    async fn login(&self, req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError> {
+        let user = self
+            .user_domain
+            .login(AuthDto {
+                username: args.username.clone(),
+                password: args.password.clone(),
+                client_id: args.client_id.clone(),
+                captcha: args.captcha.clone(),
+            })
+            .await?;
 
-        // let req_ctx = match req.extensions().get::<ReqCtx>() {
-        //     Some(ctx) => ctx.clone(),
-        //     None => return Ok(next.run(req).await),
-        // };
+        let authplay = Claims {
+            username: user.username.clone(),
+            id: user.id,
+            role: user.role_id,
+            token_id: gen_id(),
+            exp: 0,
+        };
+        let token = authorize(authplay.clone()).await.unwrap();
 
         Ok(LoginResp {
-            token: "".to_string(),
+            token: token.token,
+            user: user,
         })
     }
 }
 
-impl<T: UserDomainTrait> UserController<T> {
+impl<T: UserDomainTrait + Sync + Send> UserController<T> {
     pub fn new(user_domain: T) -> Self {
         Self { user_domain }
     }

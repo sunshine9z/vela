@@ -36,6 +36,7 @@ pub struct ReqCtx {
     pub path: String,
     pub path_params: String,
     pub method: String,
+    // pub user_agent: String,
 }
 
 pub fn set_no_auth_middleware(router: Router) -> Router {

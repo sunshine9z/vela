@@ -67,12 +67,6 @@ impl ApiResponse<()> {
         let (status, message) = err.into_status_tuple();
         ApiResponse::error_response(status, message)
     }
-    pub fn from_empty_result(result: Result<(), AppError>) -> Response {
-        match result {
-            Ok(()) => Self::ok(),
-            Err(err) => Self::from_error(err),
-        }
-    }
     // 统一的错误响应方法 - 返回 ApiResponse<EmptyData>
     pub fn error_response(status: StatusCode, message: String) -> Response {
         (status, ApiResponse::new(status, None::<()>, message)).into_response()

@@ -38,8 +38,14 @@ pub enum AppError {
     #[error("内部错误(500), 错误信息: {0}")]
     InternalError(String),
 
-    #[error("内部错误(500), 校验错误: {0}")]
+    #[error("内部错误(400), 校验错误: {0}")]
     ValidationError(String),
+
+    #[error("自定义错误({0}), 错误信息: {1}")]
+    CustomError(StatusCode, String),
+
+    #[error("内部错误(500), 未实现: {0}")]
+    NotImplementedError(String),
 }
 
 // impl IntoResponse for AppError {

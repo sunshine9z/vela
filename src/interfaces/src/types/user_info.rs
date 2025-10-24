@@ -6,9 +6,10 @@ use infrastructurex::config::APP_CONFIG;
 use jsonwebtoken::{DecodingKey, EncodingKey, Validation, decode, errors::ErrorKind};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use userDomain::entity::user::User;
 use validator::Validate;
 
-use crate::resp::ApiResponse;
+use crate::{resp::ApiResponse, types::auth_jwt::Claims};
 
 pub static KEYS: Lazy<Keys> = Lazy::new(|| {
     let secret = &APP_CONFIG.auth.jwt.secret;
@@ -33,17 +34,8 @@ impl Keys {
 pub struct UserInfo {
     pub username: String,
     pub id: i64,
-    pub role: String,
+    pub role: i64,
     pub token: String,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct Claims {
-    pub username: String,
-    pub id: i64,
-    pub token: String,
-    pub role: String,
-    pub exp: i64,
 }
 
 impl<S> FromRequestParts<S> for UserInfo
@@ -86,7 +78,7 @@ where
                 username: claims.username,
                 id: claims.id,
                 role: claims.role,
-                token: claims.token,
+                token: token_v,
             };
             parts.extensions.insert(user.clone());
             Ok(user)
@@ -105,7 +97,7 @@ pub async fn get_bear_token(parts: &mut Parts) -> Result<String, AppError> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
-pub struct ClientInfo {
+pub struct ClientInfoReq {
     pub client_id: String,
     pub width: Option<u32>,
     pub height: Option<u32>,
@@ -113,10 +105,11 @@ pub struct ClientInfo {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
 pub struct LoginReq {
-    #[validate(length(min = 6, max = 20))]
+    #[validate(length(min = 4, max = 20, message = "用户名长度必须在4-20之间"))]
     pub username: String,
-    #[validate(length(min = 6, max = 20))]
+    #[validate(length(min = 6, max = 20, message = "密码长度必须在6-20之间"))]
     pub password: String,
+    #[serde(rename = "clientId")]
     pub client_id: String,
     pub captcha: String,
 }
@@ -124,4 +117,5 @@ pub struct LoginReq {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginResp {
     pub token: String,
+    pub user: User,
 }
