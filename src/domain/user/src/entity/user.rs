@@ -6,7 +6,7 @@ pub struct User {
     pub id: i64,
     pub role_id: i64,
     pub username: String,
-    pub name: String,
+    pub name: Option<String>,
     pub identity_code: Option<String>,
     pub email: Option<String>,
     pub phone: Option<String>,

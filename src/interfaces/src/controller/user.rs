@@ -67,7 +67,6 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             exp: 0,
         };
         let token = authorize(authplay.clone()).await.unwrap();
-
         Ok(LoginResp {
             token: token.token,
             user: user,

@@ -4,10 +4,7 @@ use infrastructurex::config::APP_CONFIG;
 use jsonwebtoken::{Header, encode};
 use serde::{Deserialize, Serialize};
 
-use crate::types::{
-    auth_jwt::Claims,
-    user_info::{KEYS, Keys},
-};
+use crate::types::{auth_jwt::Claims, user_info::KEYS};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AuthBody {
@@ -35,7 +32,6 @@ pub async fn authorize(mut payload: Claims) -> Result<AuthBody, AppError> {
     // Create the authorization token
     let token = encode(&Header::default(), &payload, &KEYS.encoding)
         .map_err(|_| AppError::AuthError("授权错误".to_string()))?;
-
     // Send the authorized token
     Ok(AuthBody::new(
         token,

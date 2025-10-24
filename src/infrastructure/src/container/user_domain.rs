@@ -1,5 +1,5 @@
 use crate::encrypt::pwd_encrypt::PwdEncryptImpl;
-use crate::persistence::user_repo::Model as UserModel;
+use crate::persistence::entities::users::Model as UserModel;
 use crate::{cache::CacheManager, web_error, web_info};
 use async_trait::async_trait;
 use commonx::error::AppError;
