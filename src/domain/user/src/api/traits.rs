@@ -14,6 +14,7 @@ pub trait UserDomainTrait {
         &self,
         username: String,
     ) -> Result<Option<entity::user::User>, UserDomainError>;
+    async fn get_by_id(&self, id: i64) -> Result<Option<entity::user::User>, UserDomainError>;
     async fn gen_captcha(
         &self,
         client_id: String,

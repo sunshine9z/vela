@@ -5,7 +5,7 @@ use axum::{
 use infrastructurex::web_info;
 
 use crate::{
-    controller::user::{get_captcha, login},
+    controller::user::{get_by_id, get_by_username, get_captcha, login},
     resp::ApiResponse,
     routes::router_group::{RouterGroup, WebPathMethod},
 };
@@ -53,6 +53,18 @@ pub fn router_sys_white() -> RouterGroup {
                     WebPathMethod::Get,
                     Some("获取验证码"),
                     get(get_captcha),
+                )
+                .route(
+                    "/get_by_username",
+                    WebPathMethod::Get,
+                    Some("根据用户名获取用户"),
+                    get(get_by_username),
+                )
+                .route(
+                    "/get_by_id",
+                    WebPathMethod::Get,
+                    Some("根据ID获取用户"),
+                    get(get_by_id),
                 ),
         )
 }

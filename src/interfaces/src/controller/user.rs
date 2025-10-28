@@ -5,7 +5,7 @@ use commonx::error::AppError;
 use infrastructurex::persistence::id_gen::gen_id;
 use userDomain::{
     api::{dto::auth::AuthDto, traits::UserDomainTrait},
-    entity::captcha::CaptchaImage,
+    entity::{captcha::CaptchaImage, user::User},
 };
 
 use crate::{
@@ -15,7 +15,7 @@ use crate::{
     resp::ApiResponse,
     types::{
         auth_jwt::Claims,
-        user_info::{ClientInfoReq, LoginReq, LoginResp},
+        user_info::{ClientInfoReq, GetByIdReq, GetByUsernameReq, LoginReq, LoginResp},
     },
 };
 
@@ -30,9 +30,19 @@ pub async fn login(
     ApiResponse::from_result(USER_CONTROLLER.login(req_ctx, arg).await)
 }
 
+pub async fn get_by_username(VQuery(arg): VQuery<GetByUsernameReq>) -> impl IntoResponse {
+    ApiResponse::from_result(USER_CONTROLLER.get_by_username(arg.username).await)
+}
+
+pub async fn get_by_id(VQuery(arg): VQuery<GetByIdReq>) -> impl IntoResponse {
+    ApiResponse::from_result(USER_CONTROLLER.get_by_id(arg.id).await)
+}
+
 pub trait UserControllerTrait {
     async fn gen_captcha(&self, client_info: ClientInfoReq) -> Result<CaptchaImage, AppError>;
     async fn login(&self, req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError>;
+    async fn get_by_username(&self, username: String) -> Result<Option<User>, AppError>;
+    async fn get_by_id(&self, id: i64) -> Result<Option<User>, AppError>;
 }
 
 pub struct UserController<T: UserDomainTrait + Sync + Send> {
@@ -71,6 +81,15 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             token: token.token,
             user: user,
         })
+    }
+    async fn get_by_username(&self, username: String) -> Result<Option<User>, AppError> {
+        self.user_domain
+            .get_by_username(username)
+            .await
+            .map_err(|e| e.into())
+    }
+    async fn get_by_id(&self, id: i64) -> Result<Option<User>, AppError> {
+        self.user_domain.get_by_id(id).await.map_err(|e| e.into())
     }
 }
 

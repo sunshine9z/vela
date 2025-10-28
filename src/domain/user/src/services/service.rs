@@ -54,6 +54,13 @@ impl UserDomainTrait for UserDomainImpl {
             .map_err(|e| UserDomainError::DbError(e.to_string()))
     }
 
+    async fn get_by_id(&self, id: i64) -> Result<Option<entity::user::User>, UserDomainError> {
+        self.user_repo
+            .get_by_id(id)
+            .await
+            .map_err(|e| UserDomainError::DbError(e.to_string()))
+    }
+
     async fn login(&self, auth_req: AuthDto) -> Result<entity::user::User, UserDomainError> {
         let captcha_info = self
             .cache

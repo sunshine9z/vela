@@ -97,6 +97,16 @@ pub async fn get_bear_token(parts: &mut Parts) -> Result<String, AppError> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
+pub struct GetByUsernameReq {
+    pub username: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
+pub struct GetByIdReq {
+    pub id: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
 pub struct ClientInfoReq {
     pub client_id: String,
     pub width: Option<u32>,
