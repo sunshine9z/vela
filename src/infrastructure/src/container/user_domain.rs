@@ -26,6 +26,39 @@ impl UserRepositoryTrait for UserDomainRepositoryImpl {
                 |user| Ok(user.map(|u| u.into())),
             )
     }
+
+    async fn get_by_id(
+        &self,
+        id: i64,
+    ) -> Result<Option<user_domain::entity::user::User>, UserDomainError> {
+        UserModel::find_by_id(id).await.map_or_else(
+            |e| Err(UserDomainError::DbError(e.to_string())),
+            |user| Ok(user.map(|u| u.into())),
+        )
+    }
+
+    async fn create(&self, user: user_domain::entity::user::User) -> Result<i64, UserDomainError> {
+        UserModel::create(user).await.map_or_else(
+            |e| Err(UserDomainError::DbError(e.to_string())),
+            |ret| Ok(ret),
+        )
+    }
+
+    async fn update_by_id(
+        &self,
+        id: i64,
+        user: user_domain::entity::user::User,
+    ) -> Result<(), UserDomainError> {
+        UserModel::update_by_id(id, user)
+            .await
+            .map_or_else(|e| Err(UserDomainError::DbError(e.to_string())), |_| Ok(()))
+    }
+
+    async fn remove(&self, id: i64) -> Result<(), UserDomainError> {
+        UserModel::delete_by_id(id)
+            .await
+            .map_or_else(|e| Err(UserDomainError::DbError(e.to_string())), |_| Ok(()))
+    }
 }
 
 impl From<UserModel> for user_domain::entity::user::User {
