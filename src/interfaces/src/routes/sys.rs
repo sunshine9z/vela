@@ -5,14 +5,25 @@ use axum::{
 use infrastructurex::web_info;
 
 use crate::{
-    controller::user::{get_by_id, get_by_username, get_captcha, login},
+    controller::{
+        sys::init_all,
+        user::{get_by_id, get_by_username, get_captcha, login},
+    },
     resp::ApiResponse,
     routes::router_group::{RouterGroup, WebPathMethod},
 };
 
 // 系统路由
 pub fn router_sys() -> RouterGroup {
-    RouterGroup::new().nest("/sys", RouterGroup::new().nest("/cache", sys_cache()))
+    RouterGroup::new().nest(
+        "/sys",
+        RouterGroup::new().nest("/cache", sys_cache()).route(
+            "/init_all",
+            WebPathMethod::Post,
+            Some("初始化数据库"),
+            post(init_all),
+        ),
+    )
 }
 
 // 系统缓存路由

@@ -58,7 +58,7 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             .await
             .map_err(|e| e.into())
     }
-    async fn login(&self, req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError> {
+    async fn login(&self, _req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError> {
         let user = self
             .user_domain
             .login(AuthDto {
@@ -69,14 +69,14 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             })
             .await?;
 
-        let authplay = Claims {
+        let auth_pyload = Claims {
             username: user.username.clone(),
             id: user.id,
             role: user.role_id,
             token_id: gen_id(),
-            exp: 0,
+            ..Default::default()
         };
-        let token = authorize(authplay.clone()).await.unwrap();
+        let token = authorize(auth_pyload.clone()).await.unwrap();
         Ok(LoginResp {
             token: token.token,
             user: user,

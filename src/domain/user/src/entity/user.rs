@@ -1,7 +1,7 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct User {
     pub id: i64,
     pub role_id: i64,
