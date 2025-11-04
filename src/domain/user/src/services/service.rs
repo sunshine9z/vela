@@ -92,10 +92,7 @@ impl UserDomainTrait for UserDomainImpl {
 
         let user = user.unwrap();
 
-        if !self
-            .pwd_encrypt
-            .verify(auth_req.password.clone(), user.password.clone())
-        {
+        if !self.pwd_encrypt.verify(&auth_req.password, &user.password) {
             return Err(UserDomainError::AuthError(format!("密码错误")));
         }
         Ok(user)

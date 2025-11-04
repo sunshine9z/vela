@@ -7,7 +7,7 @@ use user_domain::{commons::error::UserDomainError, repository::encrypt::PwdEncry
 pub struct PwdEncryptImpl {}
 
 impl PwdEncryptTrait for PwdEncryptImpl {
-    fn encrypt(&self, password: String) -> Result<String, UserDomainError> {
+    fn encrypt(&self, password: &String) -> Result<String, UserDomainError> {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
         let password_hash = argon2
@@ -17,8 +17,8 @@ impl PwdEncryptTrait for PwdEncryptImpl {
         Ok(password_hash)
     }
 
-    fn verify(&self, password: String, encrypted_pwd: String) -> bool {
-        let parsed_hash = match PasswordHash::new(&encrypted_pwd) {
+    fn verify(&self, password: &String, encrypted_pwd: &String) -> bool {
+        let parsed_hash = match PasswordHash::new(encrypted_pwd) {
             Ok(h) => h,
             Err(_) => return false,
         };

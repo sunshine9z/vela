@@ -11,7 +11,7 @@ impl SysDomainRepositoryImpl {
         Self { pwd_encrypt }
     }
     pub async fn init_all(&self) -> Result<(), UserDomainError> {
-        let password = self.pwd_encrypt.encrypt("123456".to_string())?;
+        let password = self.pwd_encrypt.encrypt(&"123456".to_string())?;
         let users = vec![user_domain::entity::user::User {
             id: gen_id(),
             name: Some("admin".to_string()),

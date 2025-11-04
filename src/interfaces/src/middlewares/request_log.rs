@@ -13,7 +13,7 @@ pub async fn request_log_fn_mid(
     let (parts, body) = req.into_parts();
 
     let method = parts.method.to_string();
-    let uri = parts.uri.clone();
+    let uri = &parts.uri;
     // let path = uri.path();
     let query = uri.query().unwrap_or("");
 
@@ -48,11 +48,11 @@ pub async fn request_log_fn_mid(
         }
     );
     let req_ctx = ReqCtx {
-        ip: ip.clone(),
+        ip: ip,
         ori_uri: uri.to_string(),
         path: uri.path().to_string(),
         path_params: uri.path().to_string(),
-        method: method.clone(),
+        method: method,
         // user_agent: user_agent.to_string(),
     };
 
