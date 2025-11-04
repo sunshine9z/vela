@@ -52,10 +52,10 @@ pub fn set_auth_middleware(router: Router) -> Router {
 }
 
 pub fn set_common_middleware(mut router: Router) -> Router {
-    let server_config = APP_CONFIG.server.clone();
+    let server_config = &APP_CONFIG.server;
 
     // payload 限制
-    if let Some(limit) = server_config.middlewares.limit_payload {
+    if let Some(limit) = server_config.middlewares.limit_payload.as_ref() {
         if let Ok(size) = byte_unit::Byte::parse_str(&limit, true) {
             // 1. 禁用默认请求体限制，改用自定义限制（10MB = 10 * 1024 * 1024 字节）
             router = router
@@ -83,7 +83,7 @@ pub fn set_common_middleware(mut router: Router) -> Router {
         }
     }
     // 超时
-    if let Some(time_request) = server_config.middlewares.timeout_request {
+    if let Some(time_request) = server_config.middlewares.timeout_request.as_ref() {
         if time_request.enable {
             router = router.layer(TimeoutLayer::new(Duration::from_millis(
                 time_request.timeout,

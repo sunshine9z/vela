@@ -3,11 +3,6 @@ use std::{
     sync::atomic::{AtomicI64, Ordering},
     time::SystemTime,
 };
-// static ID_GENERATOR: Lazy<Arc<Mutex<SnowflakeIdGenerator>>> = Lazy::new(|| {
-//     let config = &APP_CONFIG.snowgenera;
-
-//     SnowflakeIdGenerator::new(config.machine_id, config.node_id)
-// });
 
 pub struct SnowflakeIdGenerator {
     pub machine_id: i32,

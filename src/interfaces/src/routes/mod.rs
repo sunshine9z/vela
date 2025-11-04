@@ -29,8 +29,8 @@ fn white_routers() -> Router {
 }
 
 fn set_routes() -> Router {
-    let server_config = APP_CONFIG.server.clone();
-    let static_dir = ServeDir::new(server_config.static_dir);
+    let server_config = &APP_CONFIG.server;
+    let static_dir = ServeDir::new(&server_config.static_dir);
     // let webdir = ServeDir::new(serverconfig.web_dir);
     Router::new()
         .nest_service("/static", static_dir)

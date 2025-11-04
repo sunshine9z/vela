@@ -9,11 +9,11 @@ use tokio::signal::{self};
 use crate::routes::init_routes;
 
 pub async fn start_server() -> Result<(), AppError> {
-    let server_config = APP_CONFIG.server.clone();
+    let server_config = &APP_CONFIG.server;
     let addr = format!("{}:{}", server_config.host, server_config.port);
     let router = init_routes();
     web_info!("-3.1 加载路由...[ok]");
-    
+
     web_info!(
         "-3.x 启动服务 {}:{}",
         server_config.host,
@@ -29,8 +29,8 @@ pub async fn start_server() -> Result<(), AppError> {
 }
 
 async fn start_https_server(route: Router, addr: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let server_config = APP_CONFIG.server.clone();
-    let config = RustlsConfig::from_pem_file(server_config.ssl.cert, server_config.ssl.key)
+    let server_config = &APP_CONFIG.server;
+    let config = RustlsConfig::from_pem_file(&server_config.ssl.cert, &server_config.ssl.key)
         .await
         .map_err(|e| format!("Failed to load TLS config: {}", e))?;
     let socket_addr =

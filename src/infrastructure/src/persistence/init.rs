@@ -9,7 +9,7 @@ use crate::{config::APP_CONFIG, web_info};
 static DATABASE: OnceCell<DatabaseConnection> = OnceCell::new();
 
 pub async fn init_db() -> Result<(), AppError> {
-    let config = APP_CONFIG.database.clone();
+    let config = &APP_CONFIG.database;
     let mut opt = ConnectOptions::new(&config.uri);
     opt.max_connections(config.max_connections)
         .min_connections(config.min_connections)

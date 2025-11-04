@@ -17,7 +17,7 @@ pub struct RedisCache {
 }
 
 impl RedisCache {
-    pub async fn new(redis_url: &str, namespace: String) -> Result<Self, AppError> {
+    pub async fn new(redis_url: &str, namespace: &String) -> Result<Self, AppError> {
         let manager = RedisConnectionManager::new(redis_url)
             .map_err(|e| AppError::RedisError(e.to_string()))?;
         let pool = Pool::builder()
@@ -26,7 +26,7 @@ impl RedisCache {
             .map_err(|e| AppError::RedisError(e.to_string()))?;
         Ok(Self {
             pool,
-            namespace: Arc::new(RwLock::new(namespace)),
+            namespace: Arc::new(RwLock::new(namespace.to_string())),
         })
     }
 

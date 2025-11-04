@@ -42,11 +42,13 @@ pub enum Cache {
 
 impl Cache {
     pub async fn init() -> Result<Self, AppError> {
-        let config = APP_CONFIG.cache.clone();
+        let config = &APP_CONFIG.cache;
         web_info!("{MODULE_NAME}: 初始化缓存, {:?}", config);
+        let default_namespace = DEFAULT_NAMESPACE.to_string();
         let namespace = config
             .namespace
-            .unwrap_or_else(|| DEFAULT_NAMESPACE.to_string());
+            .as_ref()
+            .unwrap_or_else(|| &default_namespace);
 
         match config.cache_type.as_str() {
             "redis" => {
@@ -55,7 +57,7 @@ impl Cache {
                         "redis缓存类型, 但未配置url"
                     )));
                 }
-                let redis = RedisCache::new(&config.url.unwrap(), namespace.clone()).await?;
+                let redis = RedisCache::new(&config.url.as_ref().unwrap(), namespace).await?;
                 web_info!("{MODULE_NAME}: 初始化redis缓存, namespace: {namespace} ... [ok]");
                 Ok(Self::Redis(redis))
             }

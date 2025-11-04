@@ -1,10 +1,8 @@
 use std::error::Error;
 
 use tracing::info;
-use tracing_appender::{
-    non_blocking::WorkerGuard,
-    rolling::{RollingFileAppender, Rotation},
-};
+use tracing_appender::non_blocking::WorkerGuard;
+use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_log::LogTracer;
 use tracing_subscriber::{EnvFilter, prelude::*};
 use tracing_subscriber::{
@@ -37,7 +35,7 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
         .init()
         .expect(format!("{MODULE_NAME} LogTracer 初始化失败").as_str());
 
-    let log_conf = APP_CONFIG.logger.clone();
+    let log_conf = &APP_CONFIG.logger;
 
     let format = fmt::format()
         .with_level(true)
@@ -55,7 +53,7 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
     let web_file_appender = RollingFileAppender::new(
         Rotation::DAILY,
         log_conf.log_dir.clone(),
-        log_conf.web_file_name,
+        &log_conf.web_file_name,
     );
     let (web_file_appender, web_guard) = tracing_appender::non_blocking(web_file_appender);
     guards.push(web_guard);
@@ -65,7 +63,7 @@ pub fn init() -> Result<Vec<WorkerGuard>, Box<dyn Error>> {
     let api_file_appender = RollingFileAppender::new(
         Rotation::DAILY,
         log_conf.log_dir.clone(),
-        log_conf.api_file_name,
+        &log_conf.api_file_name,
     );
     let (api_file_appender, api_guard) = tracing_appender::non_blocking(api_file_appender);
     guards.push(api_guard);
