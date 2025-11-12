@@ -17,10 +17,10 @@ pub async fn request_log_fn_mid(
     // let path = uri.path();
     let query = uri.query().unwrap_or("");
 
-    let user_agent = parts
-        .headers
-        .get("user-agent")
-        .map_or("", |h| h.to_str().unwrap_or(""));
+    // let user_agent = parts
+    //     .headers
+    //     .get("user-agent")
+    //     .map_or("", |h| h.to_str().unwrap_or(""));
 
     // let content_type = parts
     //     .headers

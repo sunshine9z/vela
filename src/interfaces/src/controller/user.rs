@@ -62,10 +62,10 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
         let user = self
             .user_domain
             .login(AuthDto {
-                username: args.username.clone(),
-                password: args.password.clone(),
-                client_id: args.client_id.clone(),
-                captcha: args.captcha.clone(),
+                username: args.username,
+                password: args.password,
+                client_id: args.client_id,
+                captcha: args.captcha,
             })
             .await?;
 
@@ -76,7 +76,7 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             token_id: gen_id(),
             ..Default::default()
         };
-        let token = authorize(auth_pyload.clone()).await.unwrap();
+        let token = authorize(auth_pyload).await.unwrap();
         Ok(LoginResp {
             token: token.token,
             user: user,

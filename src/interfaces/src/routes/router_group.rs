@@ -19,12 +19,12 @@ impl std::fmt::Display for WebPathMethod {
 }
 
 impl WebPathMethod {
-    pub fn to_method(&self) -> Method {
-        match self {
-            Self::Get => Method::GET,
-            Self::Post => Method::POST,
-        }
-    }
+    // pub fn to_method(&self) -> Method {
+    //     match self {
+    //         Self::Get => Method::GET,
+    //         Self::Post => Method::POST,
+    //     }
+    // }
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Get => "GET",

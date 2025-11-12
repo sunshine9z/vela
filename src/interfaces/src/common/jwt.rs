@@ -25,9 +25,9 @@ impl AuthBody {
 }
 
 pub async fn authorize(mut payload: Claims) -> Result<AuthBody, AppError> {
-    let iat = Local::now();
+    let now = Local::now();
 
-    let exp = iat.timestamp() + APP_CONFIG.auth.jwt.expiration;
+    let exp = now.timestamp() + APP_CONFIG.auth.jwt.expiration;
     payload.exp = exp;
     // Create the authorization token
     let token = encode(&Header::default(), &payload, &KEYS.encoding)

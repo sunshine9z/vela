@@ -36,13 +36,13 @@ where
             .into_response()
     }
 
-    pub fn ok_with_data_and_msg(data: T, msg: impl Into<String>) -> Response {
-        (
-            StatusCode::OK,
-            Self::new(StatusCode::OK, Some(data), msg.into()),
-        )
-            .into_response()
-    }
+    // pub fn ok_with_data_and_msg(data: T, msg: impl Into<String>) -> Response {
+    //     (
+    //         StatusCode::OK,
+    //         Self::new(StatusCode::OK, Some(data), msg.into()),
+    //     )
+    //         .into_response()
+    // }
 
     pub fn from_result(result: Result<T, AppError>) -> Response
     where
