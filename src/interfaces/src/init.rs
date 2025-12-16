@@ -1,10 +1,9 @@
-use std::{net::SocketAddr, str::FromStr, time::Duration};
-
 use axum::Router;
 use axum_server::tls_rustls::RustlsConfig;
 use commonx::error::AppError;
 use infrastructurex::{config::APP_CONFIG, web_info};
-use tokio::signal::{self};
+use std::{net::SocketAddr, str::FromStr, time::Duration};
+use tokio::signal;
 
 use crate::routes::init_routes;
 

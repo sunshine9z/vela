@@ -10,6 +10,7 @@ use crate::resp::ApiResponse;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VQuery<T>(pub T);
+
 impl<T, S> FromRequestParts<S> for VQuery<T>
 where
     T: DeserializeOwned + Validate,

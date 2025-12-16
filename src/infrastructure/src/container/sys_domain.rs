@@ -1,5 +1,5 @@
 use crate::persistence::entities::users::Model as UserModel;
-use crate::persistence::id_gen::gen_id;
+use crate::persistence::id_gen::next_id;
 use user_domain::{commons::error::UserDomainError, repository::encrypt::PwdEncryptTrait};
 
 pub struct SysDomainRepositoryImpl {
@@ -13,7 +13,7 @@ impl SysDomainRepositoryImpl {
     pub async fn init_all(&self) -> Result<(), UserDomainError> {
         let password = self.pwd_encrypt.encrypt(&"123456".to_string())?;
         let users = vec![user_domain::entity::user::User {
-            id: gen_id(),
+            id: next_id(),
             name: Some("admin".to_string()),
             username: "admin".to_string(),
             password,

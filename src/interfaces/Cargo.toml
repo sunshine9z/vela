@@ -9,25 +9,23 @@ infrastructurex = { package = "infrastructure", path = "../infrastructure" }
 commonx = { package = "common", path = "../common" }
 userDomain = { package = "user_domain", path = "../domain/user" }
 
-tracing = "0.1.41"
-axum = { version = "0.8.4", default-features = true }
-tower-http = { version = "0.6.6", features = ["full"] }
-hyper = "1.7.0"
-headers = "0.4.1"
-axum-extra = { version = "0.10.1", features = ["typed-header"] }
-http-body-util = "0.1.3"
-byte-unit = "5.1.6"
-axum-server = { version = "0.7.2", features = ["tls-rustls"] }
-validator = { version = "0.20.0", features = ["derive"] }
-serde = { version = "1.0.226", features = ["derive"] }
-serde_json = "1.0.145"
-serde_variant = "0.1.3"
-serde_yaml = "0.9.34-deprecated"
-jsonwebtoken = "9.3.1"
-thiserror = "2.0.16"
-once_cell = "1.21.3"
-tokio = "1.47.1"
-async-trait = "0.1.89"
-dynify = "0.1.2"
-typemap = "0.3.3"
-chrono = "0.4.42"
+tracing = { workspace = true }
+axum = { workspace = true }
+tower-http = { workspace = true }
+hyper = { workspace = true }
+headers = { workspace = true }
+axum-extra = { workspace = true }
+http-body-util = { workspace = true }
+byte-unit = { workspace = true }
+axum-server = { workspace = true }
+validator = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_variant = { workspace = true }
+serde_yaml = { workspace = true }
+jsonwebtoken = { workspace = true }
+thiserror = { workspace = true }
+once_cell = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }

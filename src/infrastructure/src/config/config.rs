@@ -10,9 +10,11 @@ pub struct Config {
     pub server: Server,
     pub logger: Logger,
     pub cache: CacheConfig,
-    pub snowgenera: SnowGenerator,
+    pub snow_generator: SnowGenerator,
     pub database: DatabaseConfig,
     pub auth: Auth,
+    #[serde(default)]
+    pub workers: Workers,
 }
 
 impl Config {
@@ -184,4 +186,15 @@ fn default_false() -> bool {
 }
 fn default_true() -> bool {
     true
+}
+
+
+
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+pub struct Workers {
+    /// Custom queue names declaration. Required if you set up a dedicated
+    /// worker against a dedicated queue.
+    pub queues: Option<Vec<String>>,
+    /// The number of workers to start
+    pub num_workers: u16
 }

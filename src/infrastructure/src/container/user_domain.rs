@@ -37,13 +37,6 @@ impl UserRepositoryTrait for UserDomainRepositoryImpl {
         )
     }
 
-    async fn create(&self, user: user_domain::entity::user::User) -> Result<i64, UserDomainError> {
-        UserModel::create(user).await.map_or_else(
-            |e| Err(UserDomainError::DbError(e.to_string())),
-            |ret| Ok(ret),
-        )
-    }
-
     async fn update_by_id(
         &self,
         id: i64,
@@ -52,6 +45,13 @@ impl UserRepositoryTrait for UserDomainRepositoryImpl {
         UserModel::update_by_id(id, user)
             .await
             .map_or_else(|e| Err(UserDomainError::DbError(e.to_string())), |_| Ok(()))
+    }
+
+    async fn create(&self, user: user_domain::entity::user::User) -> Result<i64, UserDomainError> {
+        UserModel::create(user).await.map_or_else(
+            |e| Err(UserDomainError::DbError(e.to_string())),
+            |ret| Ok(ret),
+        )
     }
 
     async fn remove(&self, id: i64) -> Result<(), UserDomainError> {

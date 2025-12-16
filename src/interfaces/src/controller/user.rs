@@ -2,7 +2,7 @@
 
 use axum::{Extension, response::IntoResponse};
 use commonx::error::AppError;
-use infrastructurex::persistence::id_gen::gen_id;
+use infrastructurex::persistence::id_gen::next_id;
 use userDomain::{
     api::{dto::auth::AuthDto, traits::UserDomainTrait},
     entity::{captcha::CaptchaImage, user::User},
@@ -73,7 +73,7 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             username: user.username.clone(),
             id: user.id,
             role: user.role_id,
-            token_id: gen_id(),
+            token_id: next_id(),
             ..Default::default()
         };
         let token = authorize(auth_pyload).await.unwrap();

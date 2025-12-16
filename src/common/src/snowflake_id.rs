@@ -28,11 +28,12 @@ impl SnowflakeIdGenerator {
         }
     }
 
-    pub fn real_time_generate(&self) -> i64 {
-        let current_timestamp = self.get_current_timestamp();
+    pub fn next_id(&self) -> i64 {
+        let mut current_timestamp = self.current_timestamp();
         // 如果时间戳小于上一次生成的时间戳，则说明时钟回退，这里可以选择等待或者报错处理
         if current_timestamp < self.last_timestamp.load(Ordering::Relaxed) {
-            panic!("时钟回退错误");
+            // panic!("时钟回退错误");
+            current_timestamp = self.wait_next_ms(current_timestamp);
         }
 
         if current_timestamp == self.last_timestamp.load(Ordering::Relaxed) {
@@ -41,12 +42,12 @@ impl SnowflakeIdGenerator {
             if sequence >= 4096 {
                 // 序列号超出范围，等待下一毫秒
                 loop {
-                    if self.get_current_timestamp() > current_timestamp {
+                    if self.current_timestamp() > current_timestamp {
                         break;
                     }
                     spin_loop();
                 }
-                return self.real_time_generate();
+                return self.next_id();
             }
         } else {
             // 新的时间戳，重置序列号
@@ -64,10 +65,21 @@ impl SnowflakeIdGenerator {
         id
     }
 
-    fn get_current_timestamp(&self) -> i64 {
+    fn current_timestamp(&self) -> i64 {
         std::time::SystemTime::now()
             .duration_since(self.unix_epoch)
             .unwrap()
             .as_millis() as i64
+    }
+    fn wait_next_ms(&self, last_timestamp: i64) -> i64 {
+        let mut ts;
+        loop {
+            ts = self.current_timestamp();
+            if ts > last_timestamp {
+                break;
+            }
+            spin_loop();
+        }
+        ts
     }
 }

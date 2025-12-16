@@ -103,4 +103,34 @@ impl RedisCache {
         let result: usize = conn.del(&key).await?;
         Ok(result)
     }
+
+    pub async fn brpop(
+        &self,
+        keys: &Vec<String>,
+        timeout: usize,
+    ) -> Result<Option<(String, String)>, AppError> {
+        let namespaced_keys = self.get_namespaced_keys(keys);
+        let mut conn = self.pool.get().await?;
+        let result: Option<(String, String)> = conn.brpop(&namespaced_keys, timeout as f64).await?;
+
+        if let Some((key, value)) = result {
+            let original_key = keys
+                .iter()
+                .zip(namespaced_keys.iter())
+                .find(|(_, namespaced)| *namespaced == &key)
+                .map(|(original, _)| (*original).clone())
+                .unwrap_or(key);
+            Ok(Some((original_key, value)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn get_namespaced_keys(&self, keys: &Vec<String>) -> Vec<String> {
+        let mut result: Vec<String> = vec![];
+        keys.iter().for_each(|k| {
+            result.push(k.to_string());
+        });
+        result
+    }
 }

@@ -10,7 +10,7 @@ use crate::{cache::redis::RedisCache, config::APP_CONFIG, web_info};
 
 static MODULE_NAME: &str = "[cache]";
 
-static DEFAULT_NAMESPACE: &str = "yela";
+static DEFAULT_NAMESPACE: &str = "vela";
 
 static GLOBAL_CACHE: OnceCell<Arc<Cache>> = OnceCell::new();
 
@@ -35,7 +35,6 @@ impl CacheManager {
 }
 
 #[derive(Debug)]
-
 pub enum Cache {
     Redis(RedisCache),
 }
@@ -83,6 +82,16 @@ impl Cache {
     {
         match self {
             Cache::Redis(cache) => cache.get_oneuse_value(k).await,
+        }
+    }
+
+    pub async fn brpop(
+        &self,
+        keys: &Vec<String>,
+        timeout: usize,
+    ) -> Result<Option<(String, String)>, AppError> {
+        match self {
+            Cache::Redis(cache) => cache.brpop(keys, timeout).await,
         }
     }
 }

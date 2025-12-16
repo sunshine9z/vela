@@ -3,7 +3,7 @@ use sea_orm::ActiveValue::Set;
 use sea_orm::{ColumnTrait, DbErr, EntityTrait, QueryFilter};
 
 use crate::persistence::entities::users;
-use crate::persistence::id_gen::gen_id;
+use crate::persistence::id_gen::next_id;
 use crate::persistence::init::get_db;
 
 impl users::Model {
@@ -22,7 +22,7 @@ impl users::Model {
 
     pub async fn create(user: user_domain::entity::user::User) -> Result<i64, DbErr> {
         let db = get_db().await;
-        let id = gen_id();
+        let id = next_id();
         let u = users::ActiveModel {
             id: Set(id),
             name: Set(user.name),

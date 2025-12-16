@@ -80,3 +80,9 @@ auth:
     secret: arxWd8PS123rtkl32QVE4Mn6T89Sl
     # Token expiration time in seconds
     expiration: 604800 # 7 days
+
+# Worker Configuration
+workers:
+  qeueu:
+    - default
+  num_workers: 1
