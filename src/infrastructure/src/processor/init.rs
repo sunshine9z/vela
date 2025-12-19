@@ -17,6 +17,10 @@ pub async fn worker_init() -> Result<(), AppError> {
     let mut processor = Processor::new(queues, worker_config.num_workers);
     processor.register(JobWorker::new());
     processor.register(MailerWorker::new());
+
+    tokio::spawn(async move {
+        processor.run().await;
+    });
     Ok(())
 }
 

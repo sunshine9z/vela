@@ -7,7 +7,7 @@ edition = "2024"
 commonx = { package = "common", path = "../common" }
 user_domain = { package = "user_domain", path = "../domain/user" }
 
-
+tokio = { workspace = true }
 once_cell = { workspace = true }
 bb8 = { workspace = true }
 bb8-redis = { workspace = true }
@@ -25,3 +25,4 @@ async-trait = { workspace = true }
 argon2 = { workspace = true }
 rand = { workspace = true }
 convert_case = { workspace = true }
+tokio-util = { workspace = true }

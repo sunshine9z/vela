@@ -63,4 +63,8 @@ impl WorkerRef {
             max_retries,
         }
     }
+
+    pub async fn call(&self, args: JsonValue) -> Result<(), AppError> {
+        self.worker.perform(args).await
+    }
 }

@@ -2,7 +2,10 @@ use async_trait::async_trait;
 use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
 
-use crate::processor::worker::{AppWorker, Worker};
+use crate::{
+    processor::worker::{AppWorker, Worker},
+    web_info,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Email {
@@ -23,6 +26,8 @@ impl AppWorker for MailerWorker {
 #[async_trait]
 impl Worker for MailerWorker {
     async fn perform(&self, args: serde_json::Value) -> Result<(), AppError> {
-        todo!()
+        let email = serde_json::from_value::<Email>(args)?;
+        web_info!(" -- 发送邮件: {:?}", email);
+        Ok(())
     }
 }
