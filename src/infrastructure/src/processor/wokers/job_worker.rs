@@ -2,8 +2,9 @@ use crate::processor::worker::{AppWorker, Worker};
 use async_trait::async_trait;
 use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
+use crate::web_info;
 
-#[derive(Deserialize, Serialize, Clone, Default)]
+#[derive(Debug,Deserialize, Serialize, Clone, Default)]
 pub struct JobMsg {
     pub job_id: i64,
 }
@@ -20,6 +21,7 @@ impl AppWorker for JobWorker {
 impl Worker for JobWorker {
     async fn perform(&self, args: serde_json::Value) -> Result<(), AppError> {
         let job_msg: JobMsg = serde_json::from_value(args)?;
-        todo!()
+        web_info!(" -- JobWorker: {:?}", job_msg);
+        Ok(())
     }
 }

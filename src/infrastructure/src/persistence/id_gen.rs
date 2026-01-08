@@ -7,7 +7,7 @@ use commonx::snowflake_id::SnowflakeIdGenerator;
 use crate::config::APP_CONFIG;
 
 static ID_GENERATOR: Lazy<Arc<SnowflakeIdGenerator>> = Lazy::new(|| {
-    let config = &APP_CONFIG.snow_generator;
+    let config = &APP_CONFIG.snowgenera;
     Arc::new(SnowflakeIdGenerator::new(config.machine_id, config.node_id))
 });
 

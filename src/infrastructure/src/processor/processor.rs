@@ -8,6 +8,7 @@ use commonx::error::AppError;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
+use crate::processor::scheduled::Scheduled;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum WorkFetcher {
@@ -72,6 +73,13 @@ impl Processor {
             });
         }
 
+        join_set.spawn({
+            let cancellation_token = self.cancellation_token.clone();
+            async move{
+                let sched = Scheduled::default();
+            }
+        });
+
         while let Some(res) = join_set.join_next().await {
             if let Err(err) = res {
                 web_error!(" -- 进程处理失败: {:?}", err);
@@ -83,7 +91,7 @@ impl Processor {
         if let WorkFetcher::NoWorkFound = self.process_one_tick_once().await? {
             return Ok(());
         }
-        return Ok(());
+        Ok(())
     }
 
     async fn process_one_tick_once(&self) -> Result<WorkFetcher, AppError> {

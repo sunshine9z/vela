@@ -1,10 +1,21 @@
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Job {
     pub queue: String,
     pub args: JsonValue,
     pub retry: bool,
     pub class: String,
+    pub created_at: f64,
+    pub enqueued_at: Option<f64>,
+    pub failed_at: Option<f64>,
+    pub error_message: Option<String>,
+    pub retry_count: Option<usize>,
+    pub retried_at: Option<f64>,
+
+    #[serde(skip)]
+    pub unique_for: Option<Duration>,
 }

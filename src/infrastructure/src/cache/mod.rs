@@ -1,3 +1,4 @@
+pub mod memory;
 pub mod redis;
 
 use std::sync::Arc;
@@ -6,7 +7,7 @@ use commonx::error::AppError;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 
-use crate::{cache::redis::RedisCache, config::APP_CONFIG, web_info};
+use crate::{cache::memory::MemoryCache, cache::redis::RedisCache, config::APP_CONFIG, web_info};
 
 static MODULE_NAME: &str = "[cache]";
 
@@ -37,6 +38,7 @@ impl CacheManager {
 #[derive(Debug)]
 pub enum Cache {
     Redis(RedisCache),
+    Memory(MemoryCache),
 }
 
 impl Cache {
@@ -60,6 +62,7 @@ impl Cache {
                 web_info!("{MODULE_NAME}: 初始化redis缓存, namespace: {namespace} ... [ok]");
                 Ok(Self::Redis(redis))
             }
+            "memory" => Ok(Self::Memory(MemoryCache::new(namespace))),
             _ => Err(AppError::CacheInitError(format!(
                 "未知的缓存类型: {}",
                 config.cache_type
@@ -67,12 +70,13 @@ impl Cache {
         }
     }
 
-    pub async fn set_value_ex<T>(&self, k: &str, value: &T, t: i32) -> Result<bool, AppError>
+    pub async fn set_value_ex<T>(&self, k: &str, value: &T, ttl: i32) -> Result<bool, AppError>
     where
         T: Serialize + Sync,
     {
         match self {
-            Cache::Redis(cache) => cache.set_value_ex(k, value, t).await,
+            Cache::Redis(cache) => cache.set_value_ex(k, value, ttl).await,
+            Cache::Memory(cache) => cache.set_value_ex(k, value, ttl).await,
         }
     }
 
@@ -82,6 +86,7 @@ impl Cache {
     {
         match self {
             Cache::Redis(cache) => cache.get_oneuse_value(k).await,
+            Cache::Memory(cache) => cache.get_oneuse_value(k).await,
         }
     }
 
@@ -92,6 +97,33 @@ impl Cache {
     ) -> Result<Option<(String, String)>, AppError> {
         match self {
             Cache::Redis(cache) => cache.brpop(keys, timeout).await,
+            Cache::Memory(cache) => cache.brpop(keys, timeout).await,
+        }
+    }
+
+    pub async fn set_nx_ex<V>(&self, key: &str, value: V, ttl: usize) -> Result<bool, AppError>
+    where
+        V: ToString + Send + Sync,
+    {
+        match self {
+            Cache::Redis(cache) => cache.set_nx_ex::<V>(key, value, ttl).await,
+            Cache::Memory(cache) => cache.set_nx_ex::<V>(key, value, ttl).await,
+        }
+    }
+
+    pub async fn sadd(&self, key: &str, values: &[&str]) -> Result<usize, AppError> {
+        match self {
+            Cache::Redis(cache) => cache.sadd(key, values).await,
+            Cache::Memory(cache) => cache.sadd(key, values).await,
+        }
+    }
+    pub async fn lpush<V>(&self, key: &str, value: V) -> Result<usize, AppError>
+    where
+        V: ToString + Send + Sync,
+    {
+        match self {
+            Cache::Redis(cache) => cache.lpush(key, value).await,
+            Cache::Memory(cache) => cache.lpush(key, value).await,
         }
     }
 }

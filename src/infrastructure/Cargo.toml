@@ -26,3 +26,6 @@ argon2 = { workspace = true }
 rand = { workspace = true }
 convert_case = { workspace = true }
 tokio-util = { workspace = true }
+sha2 = { workspace = true }
+dashmap = { workspace = true }
+sccache = "0.12.0"

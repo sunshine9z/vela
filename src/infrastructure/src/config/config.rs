@@ -10,7 +10,7 @@ pub struct Config {
     pub server: Server,
     pub logger: Logger,
     pub cache: CacheConfig,
-    pub snow_generator: SnowGenerator,
+    pub snowgenera: SnowGenerator,
     pub database: DatabaseConfig,
     pub auth: Auth,
     #[serde(default)]

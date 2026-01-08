@@ -5,5 +5,6 @@ mod processor;
 mod unit_of_work;
 mod wokers;
 mod worker;
+mod scheduled;
 
 static MODULE_NAME: &str = "[processor]";

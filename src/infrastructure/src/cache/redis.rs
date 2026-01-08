@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use bb8::Pool;
 use bb8_redis::{
     RedisConnectionManager,
-    redis::{AsyncCommands, RedisResult},
+    redis::{self, AsyncCommands, RedisResult},
 };
 use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
@@ -51,7 +51,7 @@ impl RedisCache {
     }
 
     pub async fn set_string_ex(&self, k: &str, v: &str, t: i32) -> Result<bool, AppError> {
-        let key = self.get_namespaced_key(k).await;
+        let key = self.get_namespaced_key(k);
         let mut conn = self.pool.get().await?;
         let result: RedisResult<()> = conn.set_ex(&key, v, t as u64).await;
         web_info!(
@@ -65,7 +65,7 @@ impl RedisCache {
         Ok(result.is_ok())
     }
 
-    async fn get_namespaced_key(&self, key: &str) -> String {
+    fn get_namespaced_key(&self, key: &str) -> String {
         let namespace = self.namespace.read().unwrap();
         if namespace.is_empty() {
             key.to_string()
@@ -89,7 +89,7 @@ impl RedisCache {
     }
 
     pub async fn get_string(&self, k: &str) -> Result<String, AppError> {
-        let key = self.get_namespaced_key(k).await;
+        let key = self.get_namespaced_key(k);
         let mut conn = self.pool.get().await?;
         let result: Option<String> = conn.get(&key).await?;
         result
@@ -98,7 +98,7 @@ impl RedisCache {
     }
 
     pub async fn remove(&self, k: &str) -> Result<usize, AppError> {
-        let key = self.get_namespaced_key(k).await;
+        let key = self.get_namespaced_key(k);
         let mut conn = self.pool.get().await?;
         let result: usize = conn.del(&key).await?;
         Ok(result)
@@ -112,7 +112,6 @@ impl RedisCache {
         let namespaced_keys = self.get_namespaced_keys(keys);
         let mut conn = self.pool.get().await?;
         let result: Option<(String, String)> = conn.brpop(&namespaced_keys, timeout as f64).await?;
-
         if let Some((key, value)) = result {
             let original_key = keys
                 .iter()
@@ -132,5 +131,38 @@ impl RedisCache {
             result.push(k.to_string());
         });
         result
+    }
+
+    pub async fn set_nx_ex<V>(&self, key: &str, value: V, ttl: usize) -> Result<bool, AppError>
+    where
+        V: ToString + Sync + Send,
+    {
+        let namespace_key = self.get_namespaced_key(key);
+        let mut conn = self.pool.get().await?;
+        let result = redis::cmd("SET")
+            .arg(namespace_key)
+            .arg(value.to_string())
+            .arg("EX")
+            .arg(ttl.to_string())
+            .arg("NX")
+            .query_async::<Option<String>>(&mut *conn)
+            .await?;
+        Ok(result.is_some())
+    }
+    pub async fn sadd(&self, key: &str, members: &[&str]) -> Result<usize, AppError> {
+        let namespaced_key = self.get_namespaced_key(key);
+        let mut conn = self.pool.get().await?;
+        let result: usize = conn.sadd(&namespaced_key, members).await?;
+        Ok(result)
+    }
+
+    pub async fn lpush<V>(&self, key: &str, value: V) -> Result<usize, AppError>
+    where
+        V: ToString + Send + Sync,
+    {
+        let namespaced_key = self.get_namespaced_key(key);
+        let mut conn = self.pool.get().await?;
+        let result: usize = conn.lpush(&namespaced_key, value.to_string()).await?;
+        Ok(result)
     }
 }
