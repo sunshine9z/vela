@@ -192,9 +192,10 @@ fn default_true() -> bool {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct Workers {
-    /// Custom queue names declaration. Required if you set up a dedicated
-    /// worker against a dedicated queue.
+    /// 任务队列名称
     pub queues: Option<Vec<String>>,
+    /// 定时队列,例如retry,schedule
+    pub sched_queue: Option<Vec<String>>,
     /// The number of workers to start
     pub num_workers: u16
 }

@@ -1,0 +1,118 @@
+use sea_orm_migration::{prelude::*, schema::*};
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .create_table(
+                Table::create()
+                    .table(Users::Table)
+                    .if_not_exists()
+                    .col(big_integer(Users::Id).primary_key().comment("主键"))
+                    .col(string(Users::Name).char_len(32).default("").comment("姓名"))
+                    .col(
+                        string(Users::Username)
+                            .char_len(255)
+                            .unique_key()
+                            .comment("账号"),
+                    )
+                    .col(string(Users::Password).char_len(64).comment("密码"))
+                    .col(big_integer_null(Users::RoleId).default(0).comment("角色ID"))
+                    .col(
+                        string_null(Users::IdentityCode)
+                            .char_len(64)
+                            .default("")
+                            .comment("身份证号"),
+                    )
+                    .col(
+                        string_null(Users::Phone)
+                            .char_len(16)
+                            .default("")
+                            .comment("手机号"),
+                    )
+                    .col(
+                        string_null(Users::Email)
+                            .char_len(32)
+                            .default("")
+                            .comment("邮箱"),
+                    )
+                    .col(
+                        string_null(Users::Sex)
+                            .char_len(8)
+                            .default("")
+                            .comment("性别"),
+                    )
+                    .col(
+                        string_null(Users::Avatar)
+                            .char_len(255)
+                            .default("")
+                            .comment("头像"),
+                    )
+                    .col(
+                        string_null(Users::Status)
+                            .char_len(8)
+                            .default("")
+                            .comment("状态"),
+                    )
+                    .col(
+                        string_null(Users::Remark)
+                            .char_len(255)
+                            .default("")
+                            .comment("备注"),
+                    )
+                    .col(timestamp_null(Users::CreatedAt).comment("创建时间"))
+                    .col(big_integer(Users::CreateBy).default(0).comment("创建人"))
+                    .col(
+                        timestamp_null(Users::UpdatedAt)
+                            .default(Expr::current_timestamp())
+                            .comment("更新时间"),
+                    )
+                    .col(big_integer(Users::UpdateBy).default(0).comment("更新人"))
+                    .col(timestamp_null(Users::DeletedAt).comment("删除时间"))
+                    .to_owned(),
+            )
+            .await?;
+        manager
+            .create_index(
+                Index::create()
+                    .table(Users::Table)
+                    .if_not_exists()
+                    .name("idx_users_username")
+                    .col(Users::Username)
+                    .to_owned(),
+            )
+            .await?;
+        Ok(())
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(Users::Table).to_owned())
+            .await
+    }
+}
+
+#[derive(DeriveIden)]
+enum Users {
+    Table,
+    Id,
+    Name,
+    Username,
+    Password,
+    RoleId,
+    IdentityCode,
+    Phone,
+    Email,
+    Sex,
+    Avatar,
+    Status,
+    Remark,
+    CreatedAt,
+    CreateBy,
+    UpdatedAt,
+    UpdateBy,
+    DeletedAt,
+}

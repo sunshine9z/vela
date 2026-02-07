@@ -213,6 +213,52 @@ impl MemoryCache {
         list.insert(0, value.to_string());
         Ok(list.len())
     }
+
+    pub async fn zrangebyscore_limit(
+        &self,
+        key: &str,
+        min_score: f64,
+        max_score: f64,
+        offset: isize,
+        count: isize,
+    ) -> Result<Vec<String>,AppError> {
+        let namespace_key = self.get_namespaced_key(&key).await?;
+        if let Some(sorted_set) = self.sorted_sets.get(&namespace_key) {
+            // 1. 首先创建一个排序的副本
+            let mut sorted_items:Vec<_> = sorted_set.iter().clone().collect();
+            sorted_items.
+                sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+
+            // 2. 然后按分数范围过滤
+            let filtered_items:Vec<_> = sorted_items
+                .into_iter()
+                .filter(|item| item.1 >= min_score && item.1 <= max_score)
+                .skip(offset as usize)
+                .take(count as usize)
+                .map(|item| item.0.clone())
+                .collect();
+            Ok(filtered_items)
+        } else { Ok(vec![]) }
+    }
+
+    pub async fn zrem<V>(&self, key: &str, value: V) -> Result<bool, AppError>
+    where
+        V: ToString + Send + Sync,
+    {
+
+        let namespace_key = self.get_namespaced_key(&key).await?;
+        if let Some(mut sorted_set) = self.sorted_sets.get_mut(&namespace_key) {
+            let value_str = value.to_string();
+            if let Some(pos) = sorted_set.iter().position(|(v, _)| v == &value_str) {
+                sorted_set.remove(pos);
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        } else {
+            Ok(false)
+        }
+    }
 }
 
 impl Clone for MemoryCache {

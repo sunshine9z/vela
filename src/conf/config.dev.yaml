@@ -54,7 +54,16 @@ snowgenera:
   node_id: 1
 
 database:
-  uri: mysql://root:12345678@localhost:3306/vela
+# 核心：PostgreSQL 连接字符串（Sea-ORM 直接解析）
+# 格式：postgres://用户名:密码@主机:端口/数据库名
+# 场景1：本地无密码（你之前的PG环境，推荐）
+# DATABASE_URL=postgres://postgres@localhost:5432/sea_orm_demo
+# 场景2：本地有密码（替换为你的PG密码）
+# DATABASE_URL=postgres://postgres:你的密码@localhost:5432/sea_orm_demo
+# 场景3：远程PG库（如云服务器/RDS）
+# DATABASE_URL=postgres://postgres:你的密码@192.168.1.100:5432/sea_orm_demo
+  # uri: mysql://root:12345678@localhost:3306/vela
+  uri: postgres://postgres:12345678@localhost:5432/vela
   # When enabled, the sql query will be logged.
   enable_logging: false
   # Set the timeout duration when acquiring a connection.
@@ -83,6 +92,9 @@ auth:
 
 # Worker Configuration
 workers:
-  qeueu:
+  queue:
     - default
+  sched_queue:
+    - retry
+    - schedule
   num_workers: 1

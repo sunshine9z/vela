@@ -165,4 +165,28 @@ impl RedisCache {
         let result: usize = conn.lpush(&namespaced_key, value.to_string()).await?;
         Ok(result)
     }
+
+    pub async fn zrangebyscore_limit(&self, key: &str,
+                                     min_score: f64,
+                                     max_score: f64,
+                                     offset: isize,
+                                     count: isize,
+    ) -> Result<Vec<String>, AppError> {
+        let namespaced_key = self.get_namespaced_key(key);
+        let mut conn = self.pool.get().await?;
+        let result: Vec<String> = conn
+            .zrangebyscore_limit(&namespaced_key, min_score, max_score, offset, count)
+            .await?;
+        Ok(result)
+    }
+    pub async fn zrem<V>(&self, key: &str, value: V) -> Result<bool, AppError>
+    where
+        V: ToString + Send + Sync,
+    {
+        let namespaced_key = self.get_namespaced_key(key);
+        let mut conn = self.pool.get().await?;
+        let result: i64 = conn.zrem(&namespaced_key, value.to_string()).await?;
+        Ok(result > 0)
+    }
+
 }

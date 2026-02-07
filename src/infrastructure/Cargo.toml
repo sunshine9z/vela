@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 commonx = { package = "common", path = "../common" }
 user_domain = { package = "user_domain", path = "../domain/user" }
+operater_log_domain = { package = "operater_log_domain", path = "../domain/operater_log" }
 
 tokio = { workspace = true }
 once_cell = { workspace = true }
@@ -28,4 +29,4 @@ convert_case = { workspace = true }
 tokio-util = { workspace = true }
 sha2 = { workspace = true }
 dashmap = { workspace = true }
-sccache = "0.12.0"
+tokio-cron-scheduler = { workspace = true }

@@ -1,6 +1,6 @@
 pub mod init;
 mod job;
-mod periodic;
+mod cron_scheduled;
 mod processor;
 mod unit_of_work;
 mod wokers;

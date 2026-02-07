@@ -17,6 +17,7 @@ impl UnitOfWork {
         self.enqueue_direct().await
     }
 
+    // 加入任务队列
     pub async fn enqueue_direct(&self) -> Result<(), AppError> {
         let mut job = self.job.clone();
         job.enqueued_at = Some(chrono::Local::now().timestamp() as f64);

@@ -25,10 +25,10 @@ impl users::Model {
         let id = next_id();
         let u = users::ActiveModel {
             id: Set(id),
-            name: Set(user.name),
+            name: Set(user.name.unwrap_or_default()),
             username: Set(user.username),
             password: Set(user.password),
-            role_id: Set(user.role_id),
+            role_id: Set(Option::Some(user.role_id)),
             identity_code: Set(user.identity_code),
             phone: Set(user.phone),
             email: Set(user.email),
@@ -36,8 +36,11 @@ impl users::Model {
             avatar: Set(user.avatar),
             status: Set(user.status),
             remark: Set(user.remark),
-            created_at: Set(Option::Some(Local::now())),
-            updated_at: Set(Option::Some(Local::now())),
+            created_at: Set(Option::Some(Local::now().naive_local())),
+            updated_at: Set(Option::Some(Local::now().naive_local())),
+            create_by: Set(user.create_by.unwrap_or_default()),
+            update_by: Set(user.update_by.unwrap_or_default()),
+
             ..Default::default()
         };
         let ret = users::Entity::insert(u).exec(db).await?;
@@ -47,10 +50,10 @@ impl users::Model {
     pub async fn update_by_id(id: i64, user: user_domain::entity::user::User) -> Result<(), DbErr> {
         let db = get_db().await;
         let u = users::ActiveModel {
-            name: Set(user.name),
+            name: Set(user.name.unwrap_or_default()),
             username: Set(user.username),
             password: Set(user.password),
-            role_id: Set(user.role_id),
+            role_id: Set(Option::Some(user.role_id)),
             identity_code: Set(user.identity_code),
             phone: Set(user.phone),
             email: Set(user.email),
@@ -58,7 +61,8 @@ impl users::Model {
             avatar: Set(user.avatar),
             status: Set(user.status),
             remark: Set(user.remark),
-            updated_at: Set(Option::Some(Local::now())),
+            updated_at: Set(Option::Some(Local::now().naive_local())),
+            update_by: Set(user.update_by.unwrap_or_default()),
             ..Default::default()
         };
         let _ = users::Entity::update(u)

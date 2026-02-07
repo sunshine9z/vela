@@ -2,6 +2,7 @@ use crate::encrypt::pwd_encrypt::PwdEncryptImpl;
 use crate::persistence::entities::users::Model as UserModel;
 use crate::{cache::CacheManager, web_error, web_info};
 use async_trait::async_trait;
+use chrono::{Local, TimeZone};
 use commonx::error::AppError;
 use user_domain::{
     UserDomainImpl,
@@ -65,10 +66,10 @@ impl From<UserModel> for user_domain::entity::user::User {
     fn from(user: UserModel) -> Self {
         Self {
             id: user.id,
-            name: user.name,
+            name: Option::Some(user.name),
             username: user.username,
             password: user.password,
-            role_id: user.role_id,
+            role_id: user.role_id.unwrap_or_default(),
             identity_code: user.identity_code,
             phone: user.phone,
             email: user.email,
@@ -76,11 +77,20 @@ impl From<UserModel> for user_domain::entity::user::User {
             avatar: user.avatar,
             status: user.status,
             remark: user.remark,
-            create_by: user.create_by,
-            created_at: user.created_at,
-            update_by: user.update_by,
-            updated_at: user.updated_at,
-            deleted_at: user.deleted_at,
+            create_by: Option::Some(user.create_by),
+            created_at: user
+                .created_at
+                .map(|naive| Local.from_local_datetime(&naive).single())
+                .unwrap_or_default(),
+            update_by: Option::Some(user.update_by),
+            updated_at: user
+                .updated_at
+                .map(|naive| Local.from_local_datetime(&naive).single())
+                .unwrap_or_default(),
+            deleted_at: user
+                .deleted_at
+                .map(|naive| Local.from_local_datetime(&naive).single())
+                .unwrap_or_default(),
         }
     }
 }

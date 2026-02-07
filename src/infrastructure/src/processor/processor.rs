@@ -1,14 +1,18 @@
 use crate::cache::CacheManager;
 use crate::processor::job::Job;
-use crate::processor::periodic::PeriodicJob;
+use crate::processor::scheduled::SortedScheduledWork;
 use crate::processor::unit_of_work::UnitOfWork;
 use crate::processor::worker::{Worker, WorkerRef};
 use crate::{web_error, web_info};
 use commonx::error::AppError;
+use sea_orm::Iden;
 use std::collections::BTreeMap;
 use std::sync::Arc;
+use tokio::select;
 use tokio_util::sync::CancellationToken;
-use crate::processor::scheduled::Scheduled;
+
+// 循环任务??
+const SCHEDULE_SECONDS: u64 = 5;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum WorkFetcher {
@@ -19,20 +23,25 @@ pub enum WorkFetcher {
 #[derive(Clone)]
 pub struct Processor {
     queues: Vec<String>,
-    periodic_jobs: Vec<PeriodicJob>,
+    sched_queue: Vec<String>,
+    // periodic_jobs: Vec<PeriodicJob>,
     workers: BTreeMap<String, Arc<WorkerRef>>,
     cancellation_token: CancellationToken,
     num_workers: u16,
 }
 
 impl Processor {
-    pub fn new(queues: Vec<String>, num_workers: u16) -> Self {
+    pub fn new(queues: Vec<String>, sched_queue: Vec<String>, num_workers: u16) -> Self {
         Processor {
             queues: queues
                 .iter()
                 .map(|queue| format!("queue:{queue}"))
                 .collect(),
-            periodic_jobs: vec![],
+            // periodic_jobs: vec![],
+            sched_queue: sched_queue
+                .iter()
+                .map(|queue| format!("queue:{}", queue))
+                .collect(),
             workers: BTreeMap::new(),
             cancellation_token: CancellationToken::new(),
             num_workers,
@@ -41,7 +50,8 @@ impl Processor {
 
     async fn fetch(&self) -> Result<Option<UnitOfWork>, AppError> {
         let cache = CacheManager::instance();
-        let res: Option<(String, String)> = cache.brpop(&self.queues, 2).await?;
+        web_info!(" -- 从队列中获取任务: {:?}", &self.queues);
+        let res: Option<(String, String)> = cache.brpop(&self.queues, 5).await?;
         if let Some((queue, job_raw)) = res {
             let job: Job = serde_json::from_str(&job_raw)?;
             return Ok(Some(UnitOfWork { queue, job }));
@@ -58,27 +68,58 @@ impl Processor {
     pub async fn run(self) {
         let mut join_set = tokio::task::JoinSet::new();
 
-        for i in 0..self.num_workers {
-            join_set.spawn({
-                let processor = self.clone();
-                let cancellation_token = self.cancellation_token.clone();
-                async move {
-                    while !cancellation_token.is_cancelled() {
-                        if let Err(err) = &processor.process_one().await {
-                            web_error!(" -- 进程 {} 处理失败: {:?}", i, err);
-                        }
-                        web_info!(" -- 进程 {} cancelled...", i);
-                    }
-                }
-            });
-        }
+        /// 系统运行的任务队列
+        // for i in 0..self.num_workers {
+        //     join_set.spawn({
+        //         let processor = self.clone();
+        //         let cancellation_token = self.cancellation_token.clone();
+        //         async move {
+        //             while !cancellation_token.is_cancelled() {
+        //                 if let Err(err) = processor.process_one().await {
+        //                     web_error!(" -- 进程 {} 处理失败: {:?}", i, err);
+        //                 }
+        //             }
+        //             web_info!(" -- 进程 {} cancelled...", i);
+        //         }
+        //     });
+        // }
 
+        /// 从 retry,schedule 队列中获取任务,加入到任务队列中运行
         join_set.spawn({
             let cancellation_token = self.cancellation_token.clone();
             async move{
-                let sched = Scheduled::default();
+                let sched = SortedScheduledWork::default();
+                loop{
+                    select! {
+                        _ = tokio::time::sleep(std::time::Duration::from_secs(SCHEDULE_SECONDS)) => {}
+                        _ = cancellation_token.cancelled() => {
+                            break;
+                        }
+                    }
+                    if let Err(err) = sched.enqueue_jobs(chrono::Local::now(),&self.sched_queue).await{
+                        web_error!("Error in scheduled poller routine: {:?}", err);
+                    }
+                }
             }
         });
+
+        // join_set.spawn({
+        //     let cancellation_token = self.cancellation_token.clone();
+        //     async move {
+        //         let sched = Scheduled::default();
+        //         loop {
+        //             select! {
+        //                 _ = tokio::time::sleep(std::time::Duration::from_secs(30)) => {}
+        //                 _ = cancellation_token.cancelled()=>{
+        //                     break;
+        //                 }
+        //             }
+        //             if let Err(err) = sched.enqueue_periodic_jobs(chrono::Local::now()).await{
+        //                 web_error!("Error in scheduled poller routine: {:?}", err);
+        //             }
+        //         }
+        //     }
+        // });
 
         while let Some(res) = join_set.join_next().await {
             if let Err(err) = res {

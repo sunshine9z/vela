@@ -8,6 +8,8 @@ edition = "2024"
 infrastructurex = { package = "infrastructure", path = "../infrastructure" }
 commonx = { package = "common", path = "../common" }
 userDomain = { package = "user_domain", path = "../domain/user" }
+operaterLogDomain = { package = "operater_log_domain", path = "../domain/operater_log" }
+
 
 tracing = { workspace = true }
 axum = { workspace = true }

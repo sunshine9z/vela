@@ -126,4 +126,30 @@ impl Cache {
             Cache::Memory(cache) => cache.lpush(key, value).await,
         }
     }
+
+    pub async fn zrangebyscore_limit(&self,
+                                     key: &str,
+                                     min_score: f64,
+                                     max_score: f64,
+                                     offset: isize,
+                                     count: isize,) -> Result<Vec<String>, AppError> {
+        match self {
+            Cache::Redis(cache  ) => {
+                cache.zrangebyscore_limit(key, min_score, max_score, offset, count).await
+            }
+            Cache::Memory(cache) => {
+                cache.zrangebyscore_limit(key, min_score, max_score, offset, count).await
+            }
+        }
+    }
+
+    pub async fn zrem<V>(&self, key: &str, value: V) -> Result<bool, AppError>
+    where
+        V: ToString + Send + Sync,
+    {
+        match self {
+            Cache::Redis(cache) => cache.zrem(key, value).await,
+            Cache::Memory(cache) => cache.zrem(key, value).await,
+        }
+    }
 }

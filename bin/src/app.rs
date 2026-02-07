@@ -1,6 +1,6 @@
 use infrastructurex::cache::CacheManager;
 use infrastructurex::persistence::init::init_db;
-use infrastructurex::processor::init::worker_init;
+use infrastructurex::processor::init::init_worker;
 use infrastructurex::web_info;
 use interfacesx::init::start_server;
 
@@ -24,7 +24,7 @@ impl App {
         web_info!("{MODULE_NAME}: 1. 缓存初始化 ... [成功]");
         init_db().await.unwrap();
         web_info!("{MODULE_NAME}: 2. 数据库初始化 ... [成功]");
-        worker_init().await.unwrap();
+        init_worker().await.unwrap();
         web_info!("{MODULE_NAME}: 3. 启动web服务 ...");
         start_server().await.unwrap();
     }
