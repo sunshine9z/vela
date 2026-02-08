@@ -7,7 +7,9 @@ use commonx::error::AppError;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 
-use crate::{cache::memory::MemoryCache, cache::redis::RedisCache, config::APP_CONFIG, web_info};
+use crate::{cache::memory::MemoryCache, cache::redis::RedisCache};
+use commonx::config::APP_CONFIG;
+use commonx::web_info;
 
 static MODULE_NAME: &str = "[cache]";
 
@@ -127,18 +129,24 @@ impl Cache {
         }
     }
 
-    pub async fn zrangebyscore_limit(&self,
-                                     key: &str,
-                                     min_score: f64,
-                                     max_score: f64,
-                                     offset: isize,
-                                     count: isize,) -> Result<Vec<String>, AppError> {
+    pub async fn zrangebyscore_limit(
+        &self,
+        key: &str,
+        min_score: f64,
+        max_score: f64,
+        offset: isize,
+        count: isize,
+    ) -> Result<Vec<String>, AppError> {
         match self {
-            Cache::Redis(cache  ) => {
-                cache.zrangebyscore_limit(key, min_score, max_score, offset, count).await
+            Cache::Redis(cache) => {
+                cache
+                    .zrangebyscore_limit(key, min_score, max_score, offset, count)
+                    .await
             }
             Cache::Memory(cache) => {
-                cache.zrangebyscore_limit(key, min_score, max_score, offset, count).await
+                cache
+                    .zrangebyscore_limit(key, min_score, max_score, offset, count)
+                    .await
             }
         }
     }

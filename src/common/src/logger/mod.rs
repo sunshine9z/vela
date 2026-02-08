@@ -10,7 +10,6 @@ pub const API_LOG: &'static str = "api";
 /// Web信息日志宏，基于tracing::info!实现
 /// 用法与tracing::info!相同，但专为Web应用场景优化
 // 直接定义所有需要的日志宏，避免复杂的嵌套宏问题
-
 #[macro_export]
 macro_rules! web_info {
     ($($arg:tt)*) => {

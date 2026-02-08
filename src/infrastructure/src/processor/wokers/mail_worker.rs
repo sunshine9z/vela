@@ -2,10 +2,8 @@ use async_trait::async_trait;
 use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    processor::worker::{AppWorker, Worker},
-    web_info,
-};
+use crate::processor::worker::{AppWorker, Worker};
+use commonx::web_info;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Email {

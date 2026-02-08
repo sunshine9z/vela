@@ -1,8 +1,9 @@
-use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
 use serde_variant::to_variant_name;
 use serde_yaml::from_str;
 use std::{env, fs};
+
+use crate::error::AppError;
 
 static CONFIG_PATH: &str = "src/conf";
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -188,8 +189,6 @@ fn default_true() -> bool {
     true
 }
 
-
-
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct Workers {
     /// 任务队列名称
@@ -197,5 +196,5 @@ pub struct Workers {
     /// 定时队列,例如retry,schedule
     pub sched_queue: Option<Vec<String>>,
     /// The number of workers to start
-    pub num_workers: u16
+    pub num_workers: u16,
 }

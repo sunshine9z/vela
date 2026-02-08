@@ -11,8 +11,8 @@ use axum::{
     middleware,
     response::{IntoResponse, Response},
 };
+use commonx::{config::APP_CONFIG, web_error, web_info};
 use hyper::StatusCode;
-use infrastructurex::{config::APP_CONFIG, web_error, web_info};
 use tower_http::{
     catch_panic::CatchPanicLayer,
     compression::{CompressionLayer, DefaultPredicate, Predicate, predicate::NotForContentType},

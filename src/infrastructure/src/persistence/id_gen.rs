@@ -2,9 +2,8 @@ use std::sync::Arc;
 
 use once_cell::sync::Lazy;
 
+use commonx::config::APP_CONFIG;
 use commonx::snowflake_id::SnowflakeIdGenerator;
-
-use crate::config::APP_CONFIG;
 
 static ID_GENERATOR: Lazy<Arc<SnowflakeIdGenerator>> = Lazy::new(|| {
     let config = &APP_CONFIG.snowgenera;

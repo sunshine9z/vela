@@ -2,12 +2,12 @@ use axum::{
     response::IntoResponse,
     routing::{get, post},
 };
-use infrastructurex::web_info;
+use commonx::web_info;
 
 use crate::{
     controller::{
         sys::init_all,
-        user::{get_by_id, get_by_username, get_captcha, login},
+        user::{get_by_id, get_by_username, get_captcha, login, login_with_captcha},
     },
     resp::ApiResponse,
     routes::router_group::{RouterGroup, WebPathMethod},
@@ -59,6 +59,12 @@ pub fn router_sys_white() -> RouterGroup {
             "/auth",
             RouterGroup::new()
                 .route("/login", WebPathMethod::Post, Some("用户登录"), post(login))
+                .route(
+                    "/login_with_captcha",
+                    WebPathMethod::Post,
+                    Some("用户登录（验证码）"),
+                    post(login_with_captcha),
+                )
                 .route(
                     "/get_captcha",
                     WebPathMethod::Get,

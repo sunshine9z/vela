@@ -15,11 +15,11 @@ impl MigrationTrait for Migration {
                     .col(string(Users::Name).char_len(32).default("").comment("姓名"))
                     .col(
                         string(Users::Username)
-                            .char_len(255)
+                            .char_len(64)
                             .unique_key()
                             .comment("账号"),
                     )
-                    .col(string(Users::Password).char_len(64).comment("密码"))
+                    .col(string(Users::Password).char_len(128).comment("密码"))
                     .col(big_integer_null(Users::RoleId).default(0).comment("角色ID"))
                     .col(
                         string_null(Users::IdentityCode)

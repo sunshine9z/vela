@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use axum::{Router, routing::MethodRouter};
+use commonx::web_info;
 use hyper::Method;
-use infrastructurex::web_info;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]

@@ -1,7 +1,7 @@
 use axum::Router;
 use axum_server::tls_rustls::RustlsConfig;
 use commonx::error::AppError;
-use infrastructurex::{config::APP_CONFIG, web_info};
+use commonx::{config::APP_CONFIG, web_info};
 use std::{net::SocketAddr, str::FromStr, time::Duration};
 use tokio::signal;
 

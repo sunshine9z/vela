@@ -1,9 +1,10 @@
+use crate::cache::CacheManager;
 use crate::encrypt::pwd_encrypt::PwdEncryptImpl;
 use crate::persistence::entities::users::Model as UserModel;
-use crate::{cache::CacheManager, web_error, web_info};
 use async_trait::async_trait;
 use chrono::{Local, TimeZone};
 use commonx::error::AppError;
+use commonx::{web_error, web_info};
 use user_domain::{
     UserDomainImpl,
     commons::error::UserDomainError,

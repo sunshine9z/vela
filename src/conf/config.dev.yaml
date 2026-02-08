@@ -65,7 +65,7 @@ database:
   # uri: mysql://root:12345678@localhost:3306/vela
   uri: postgres://postgres:12345678@localhost:5432/vela
   # When enabled, the sql query will be logged.
-  enable_logging: false
+  enable_logging: true
   # Set the timeout duration when acquiring a connection.
   connect_timeout: 60000
   # Set the idle duration before closing a connection.

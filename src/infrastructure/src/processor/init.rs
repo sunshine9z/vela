@@ -1,11 +1,11 @@
-use crate::config::APP_CONFIG;
+use crate::processor::cron_scheduled::init_corn_schedule;
 use crate::processor::processor::Processor;
 use crate::processor::wokers::job_worker::JobWorker;
 use crate::processor::wokers::mail_worker::MailerWorker;
 use crate::processor::worker::AppWorker;
-use crate::web_info;
+use commonx::config::APP_CONFIG;
 use commonx::error::AppError;
-use crate::processor::cron_scheduled::init_corn_schedule;
+use commonx::web_info;
 
 pub const DEFAULT_QUEUE: &[&str] = &["default"];
 
@@ -25,9 +25,7 @@ pub async fn init_base_worker() -> Result<(), AppError> {
         None => {
             vec![]
         }
-        Some(ref qs) => {
-            qs.clone()
-        }
+        Some(ref qs) => qs.clone(),
     };
     let mut processor = Processor::new(queues, sched_queues, worker_config.num_workers);
     processor.register(JobWorker::new());

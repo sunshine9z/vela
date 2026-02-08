@@ -1,10 +1,10 @@
 use crate::processor::worker::{AppWorker, Worker};
 use async_trait::async_trait;
 use commonx::error::AppError;
+use commonx::web_info;
 use serde::{Deserialize, Serialize};
-use crate::web_info;
 
-#[derive(Debug,Deserialize, Serialize, Clone, Default)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct JobMsg {
     pub job_id: i64,
 }

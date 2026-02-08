@@ -1,7 +1,7 @@
 mod router_group;
 mod sys;
 use axum::{Router, middleware::from_fn, response::IntoResponse};
-use infrastructurex::config::APP_CONFIG;
+use commonx::config::APP_CONFIG;
 use tower_http::{
     services::ServeDir,
     trace::{DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer},

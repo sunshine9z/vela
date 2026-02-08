@@ -8,7 +8,7 @@ use bb8_redis::{
 use commonx::error::AppError;
 use serde::{Deserialize, Serialize};
 
-use crate::web_info;
+use commonx::web_info;
 
 #[derive(Debug)]
 pub struct RedisCache {
@@ -166,11 +166,13 @@ impl RedisCache {
         Ok(result)
     }
 
-    pub async fn zrangebyscore_limit(&self, key: &str,
-                                     min_score: f64,
-                                     max_score: f64,
-                                     offset: isize,
-                                     count: isize,
+    pub async fn zrangebyscore_limit(
+        &self,
+        key: &str,
+        min_score: f64,
+        max_score: f64,
+        offset: isize,
+        count: isize,
     ) -> Result<Vec<String>, AppError> {
         let namespaced_key = self.get_namespaced_key(key);
         let mut conn = self.pool.get().await?;
@@ -188,5 +190,4 @@ impl RedisCache {
         let result: i64 = conn.zrem(&namespaced_key, value.to_string()).await?;
         Ok(result > 0)
     }
-
 }

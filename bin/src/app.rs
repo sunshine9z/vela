@@ -1,7 +1,7 @@
+use commonx::web_info;
 use infrastructurex::cache::CacheManager;
 use infrastructurex::persistence::init::init_db;
 use infrastructurex::processor::init::init_worker;
-use infrastructurex::web_info;
 use interfacesx::init::start_server;
 
 static MODULE_NAME: &str = "[app]";

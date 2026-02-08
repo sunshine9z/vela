@@ -1,8 +1,8 @@
 use axum::{RequestPartsExt, extract::FromRequestParts, http::request::Parts};
 use axum_extra::TypedHeader;
+use commonx::config::APP_CONFIG;
 use commonx::error::AppError;
 use headers::{Authorization, authorization::Bearer};
-use infrastructurex::config::APP_CONFIG;
 use jsonwebtoken::{DecodingKey, EncodingKey, Validation, decode, errors::ErrorKind};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -120,7 +120,18 @@ pub struct LoginReq {
     #[validate(length(min = 6, max = 20, message = "密码长度必须在6-20之间"))]
     pub password: String,
     #[serde(rename = "clientId")]
+    pub client_id: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
+pub struct LoginWithCaptchaReq {
+    #[validate(length(min = 4, max = 20, message = "用户名长度必须在4-20之间"))]
+    pub username: String,
+    #[validate(length(min = 6, max = 20, message = "密码长度必须在6-20之间"))]
+    pub password: String,
+    #[serde(rename = "clientId")]
     pub client_id: String,
+    #[validate(length(min = 6, max = 6, message = "验证码长度必须为6位"))]
     pub captcha: String,
 }
 

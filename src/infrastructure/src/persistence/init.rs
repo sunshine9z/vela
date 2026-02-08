@@ -4,7 +4,8 @@ use commonx::error::AppError;
 use once_cell::sync::OnceCell;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
-use crate::{config::APP_CONFIG, web_info};
+use commonx::config::APP_CONFIG;
+use commonx::web_info;
 
 static DATABASE: OnceCell<DatabaseConnection> = OnceCell::new();
 

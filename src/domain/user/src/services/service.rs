@@ -1,6 +1,9 @@
 use crate::{
     MODEL_USER_DOMAIN, UserDomainImpl,
-    api::{dto::auth::AuthDto, traits::UserDomainTrait},
+    api::{
+        dto::auth::{AuthDto, AuthDtoWithCaptcha},
+        traits::UserDomainTrait,
+    },
     commons::error::UserDomainError,
     entity::{
         self,
@@ -9,7 +12,7 @@ use crate::{
 };
 use async_trait::async_trait;
 use captcha_rust::Captcha;
-use tracing::info;
+use tracing::{error, info};
 
 fn get_cache_key(client_id: &str) -> String {
     format!("capcha:{}", client_id)
@@ -62,6 +65,28 @@ impl UserDomainTrait for UserDomainImpl {
     }
 
     async fn login(&self, auth_req: AuthDto) -> Result<entity::user::User, UserDomainError> {
+        let user = self
+            .user_repo
+            .get_by_username(auth_req.username.clone())
+            .await?;
+
+        if user.is_none() {
+            return Err(UserDomainError::AuthError(format!("用户不存在")));
+        }
+
+        let user = user.unwrap();
+
+        if !self.pwd_encrypt.verify(&auth_req.password, &user.password) {
+            error!(target: MODEL_USER_DOMAIN, "密码错误: password:{} except:{}", auth_req.password, user.password);
+            return Err(UserDomainError::AuthError(format!("密码错误")));
+        }
+        Ok(user)
+    }
+
+    async fn login_with_captcha(
+        &self,
+        auth_req: AuthDtoWithCaptcha,
+    ) -> Result<entity::user::User, UserDomainError> {
         let captcha_info = self
             .cache
             .get_captcha(get_cache_key(&auth_req.client_id))
