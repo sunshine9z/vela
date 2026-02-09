@@ -75,7 +75,7 @@ impl RouterGroup {
         self.sub_paths.insert(path.to_string(), web_path);
         self
     }
-
+    #[allow(dead_code)]
     pub fn merge(mut self, web_path: RouterGroup) -> Self {
         for (sub_key, sub_path) in web_path.sub_paths {
             self.sub_paths.insert(sub_key, sub_path);

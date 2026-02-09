@@ -12,54 +12,59 @@ impl MigrationTrait for Migration {
                     .table(Users::Table)
                     .if_not_exists()
                     .col(big_integer(Users::Id).primary_key().comment("主键"))
-                    .col(string(Users::Name).char_len(32).default("").comment("姓名"))
+                    .col(
+                        string(Users::Name)
+                            .string_len(32)
+                            .default("")
+                            .comment("姓名"),
+                    )
                     .col(
                         string(Users::Username)
-                            .char_len(64)
+                            .string_len(64)
                             .unique_key()
                             .comment("账号"),
                     )
-                    .col(string(Users::Password).char_len(128).comment("密码"))
+                    .col(string(Users::Password).string_len(128).comment("密码"))
                     .col(big_integer_null(Users::RoleId).default(0).comment("角色ID"))
                     .col(
                         string_null(Users::IdentityCode)
-                            .char_len(64)
+                            .string_len(64)
                             .default("")
                             .comment("身份证号"),
                     )
                     .col(
                         string_null(Users::Phone)
-                            .char_len(16)
+                            .string_len(16)
                             .default("")
                             .comment("手机号"),
                     )
                     .col(
                         string_null(Users::Email)
-                            .char_len(32)
+                            .string_len(32)
                             .default("")
                             .comment("邮箱"),
                     )
                     .col(
                         string_null(Users::Sex)
-                            .char_len(8)
+                            .string_len(8)
                             .default("")
                             .comment("性别"),
                     )
                     .col(
                         string_null(Users::Avatar)
-                            .char_len(255)
+                            .string_len(255)
                             .default("")
                             .comment("头像"),
                     )
                     .col(
                         string_null(Users::Status)
-                            .char_len(8)
+                            .string_len(8)
                             .default("")
                             .comment("状态"),
                     )
                     .col(
                         string_null(Users::Remark)
-                            .char_len(255)
+                            .string_len(255)
                             .default("")
                             .comment("备注"),
                     )

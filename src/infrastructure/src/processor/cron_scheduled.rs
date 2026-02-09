@@ -1,6 +1,4 @@
 use commonx::error::AppError;
-use sea_orm::JsonValue;
-use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex, OnceLock};
 use tokio_cron_scheduler::JobScheduler;
 
@@ -59,7 +57,7 @@ impl CronScheduled {
         if self.hasStart {
             return Ok(());
         }
-        let mut s = self.scheduler.lock().unwrap();
+        let s = self.scheduler.lock().unwrap();
         if self.hasStart {
             return Ok(());
         }

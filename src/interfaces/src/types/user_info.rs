@@ -6,7 +6,7 @@ use headers::{Authorization, authorization::Bearer};
 use jsonwebtoken::{DecodingKey, EncodingKey, Validation, decode, errors::ErrorKind};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use userDomain::entity::user::User;
+use userDomain::api::dto::user_info::UserInfoDto;
 use validator::Validate;
 
 use crate::{resp::ApiResponse, types::auth_jwt::Claims};
@@ -138,5 +138,5 @@ pub struct LoginWithCaptchaReq {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginResp {
     pub token: String,
-    pub user: User,
+    pub user: UserInfoDto,
 }

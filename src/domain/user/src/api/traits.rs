@@ -1,5 +1,8 @@
 use crate::{
-    api::dto::auth::{AuthDto, AuthDtoWithCaptcha},
+    api::dto::{
+        auth::{AuthDto, AuthDtoWithCaptcha},
+        user_info::UserInfoDto,
+    },
     commons::error::UserDomainError,
     entity::{
         self,
@@ -22,9 +25,9 @@ pub trait UserDomainTrait {
         height: u32,
     ) -> Result<CaptchaImage, UserDomainError>;
     async fn get_captcha(&self, client_id: String) -> Result<CaptchaCacheInfo, UserDomainError>;
-    async fn login(&self, auth_req: AuthDto) -> Result<entity::user::User, UserDomainError>;
+    async fn login(&self, auth_req: AuthDto) -> Result<UserInfoDto, UserDomainError>;
     async fn login_with_captcha(
         &self,
         auth_req: AuthDtoWithCaptcha,
-    ) -> Result<entity::user::User, UserDomainError>;
+    ) -> Result<UserInfoDto, UserDomainError>;
 }

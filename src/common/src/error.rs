@@ -87,6 +87,7 @@ impl_error_from!(
     bb8_redis::redis::RedisError,
     bb8::RunError<bb8_redis::redis::RedisError>,
     Box<dyn std::error::Error>,
+    sea_orm::DbErr,
 );
 
 impl From<&str> for AppError {

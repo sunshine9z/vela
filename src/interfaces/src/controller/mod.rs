@@ -10,8 +10,8 @@ use crate::controller::{sys::SysController, user::UserController};
 pub mod sys;
 pub mod user;
 
-static MODULE_NAME: &str = "[UserController]";
-static SYS_MODULE_NAME: &str = "[SysController]";
+// static MODULE_NAME: &str = "[UserController]";
+// static SYS_MODULE_NAME: &str = "[SysController]";
 
 pub static USER_CONTROLLER: Lazy<UserController<UserDomainImpl>> =
     Lazy::new(|| UserController::new(new_user_domain_service()));

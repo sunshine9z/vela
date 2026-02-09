@@ -85,9 +85,10 @@ pub fn set_common_middleware(mut router: Router) -> Router {
     // 超时
     if let Some(time_request) = server_config.middlewares.timeout_request.as_ref() {
         if time_request.enable {
-            router = router.layer(TimeoutLayer::new(Duration::from_millis(
-                time_request.timeout,
-            )));
+            router = router.layer(TimeoutLayer::with_status_code(
+                StatusCode::REQUEST_TIMEOUT,
+                Duration::from_millis(time_request.timeout),
+            ));
             web_info!("{MIDDLEWARE_NAME} 添加超时{}ms中间件", time_request.timeout);
         }
     }

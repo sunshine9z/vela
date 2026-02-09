@@ -7,7 +7,6 @@ use sea_orm::{DbErr, EntityTrait};
 impl sys_oper_log::Model {
     pub async fn create(
         api_name: String,
-        method: String,
         request_method: String,
         oper_id: i64,
         oper_name: String,
@@ -23,7 +22,6 @@ impl sys_oper_log::Model {
         let log = sys_oper_log::ActiveModel {
             id: Set(id),
             api_name: Set(api_name),
-            method: Set(method),
             request_method: Set(request_method),
             oper_id: Set(Option::Some(oper_id)),
             oper_name: Set(oper_name),

@@ -3,9 +3,7 @@ use std::time::Instant;
 use axum::{extract::Request, middleware::Next, response::IntoResponse};
 use chrono::Local;
 use hyper::StatusCode;
-use infrastructurex::{
-    container::operater_log_domain::new_operater_log_domain_service, persistence::id_gen::next_id,
-};
+use infrastructurex::container::operater_log_domain::new_operater_log_domain_service;
 use once_cell::sync::Lazy;
 use operaterLogDomain::{
     OperaterLogDomainImpl, api::traits::OperaterLogDomainTrait, entity::OperaterLog,

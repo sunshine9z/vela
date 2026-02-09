@@ -2,8 +2,8 @@ use argon2::{
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
     password_hash::{SaltString, rand_core::OsRng},
 };
+use commonx::web_info;
 use user_domain::{commons::error::UserDomainError, repository::encrypt::PwdEncryptTrait};
-
 pub struct PwdEncryptImpl {}
 
 impl PwdEncryptTrait for PwdEncryptImpl {
@@ -20,7 +20,10 @@ impl PwdEncryptTrait for PwdEncryptImpl {
     fn verify(&self, password: &String, encrypted_pwd: &String) -> bool {
         let parsed_hash = match PasswordHash::new(encrypted_pwd) {
             Ok(h) => h,
-            Err(_) => return false,
+            Err(e) => {
+                web_info!("密码校验:密码:{} 校验结果:解析密码哈希失败:{}", password, e);
+                return false;
+            }
         };
         Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)

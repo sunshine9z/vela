@@ -1,7 +1,10 @@
 use crate::{
     MODEL_USER_DOMAIN, UserDomainImpl,
     api::{
-        dto::auth::{AuthDto, AuthDtoWithCaptcha},
+        dto::{
+            auth::{AuthDto, AuthDtoWithCaptcha},
+            user_info::UserInfoDto,
+        },
         traits::UserDomainTrait,
     },
     commons::error::UserDomainError,
@@ -64,7 +67,7 @@ impl UserDomainTrait for UserDomainImpl {
             .map_err(|e| UserDomainError::DbError(e.to_string()))
     }
 
-    async fn login(&self, auth_req: AuthDto) -> Result<entity::user::User, UserDomainError> {
+    async fn login(&self, auth_req: AuthDto) -> Result<UserInfoDto, UserDomainError> {
         let user = self
             .user_repo
             .get_by_username(auth_req.username.clone())
@@ -75,18 +78,17 @@ impl UserDomainTrait for UserDomainImpl {
         }
 
         let user = user.unwrap();
-
         if !self.pwd_encrypt.verify(&auth_req.password, &user.password) {
             error!(target: MODEL_USER_DOMAIN, "密码错误: password:{} except:{}", auth_req.password, user.password);
             return Err(UserDomainError::AuthError(format!("密码错误")));
         }
-        Ok(user)
+        Ok(user.into())
     }
 
     async fn login_with_captcha(
         &self,
         auth_req: AuthDtoWithCaptcha,
-    ) -> Result<entity::user::User, UserDomainError> {
+    ) -> Result<UserInfoDto, UserDomainError> {
         let captcha_info = self
             .cache
             .get_captcha(get_cache_key(&auth_req.client_id))
@@ -120,6 +122,6 @@ impl UserDomainTrait for UserDomainImpl {
         if !self.pwd_encrypt.verify(&auth_req.password, &user.password) {
             return Err(UserDomainError::AuthError(format!("密码错误")));
         }
-        Ok(user)
+        Ok(user.into())
     }
 }

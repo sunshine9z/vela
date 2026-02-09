@@ -19,3 +19,4 @@ tracing-appender = { workspace = true }
 chrono = { workspace = true }
 once_cell = { workspace = true }
 serde_variant = { workspace = true }
+sea-orm = { workspace = true }

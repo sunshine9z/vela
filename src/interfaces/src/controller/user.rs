@@ -93,7 +93,7 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             token_id: next_id(),
             ..Default::default()
         };
-        let token = authorize(auth_pyload).await.unwrap();
+        let token = authorize(auth_pyload).await?;
         Ok(LoginResp {
             token: token.token,
             user: user,
@@ -121,7 +121,7 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             token_id: next_id(),
             ..Default::default()
         };
-        let token = authorize(auth_pyload).await.unwrap();
+        let token = authorize(auth_pyload).await?;
         Ok(LoginResp {
             token: token.token,
             user: user,

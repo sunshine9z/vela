@@ -82,7 +82,7 @@ impl ApiResponse<()> {
         )
             .into_response()
     }
-
+    #[allow(dead_code)]
     pub fn bad_request(msg: impl Into<String>) -> Response {
         ApiResponse::error_response(StatusCode::BAD_REQUEST, msg.into())
     }

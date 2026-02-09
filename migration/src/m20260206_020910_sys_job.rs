@@ -23,55 +23,49 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         string(SysOperLog::ApiName)
-                            .char_len(50)
+                            .string_len(50)
                             .default("")
                             .comment("API名称"),
                     )
                     .col(
-                        string(SysOperLog::Method)
-                            .char_len(100)
-                            .default("")
-                            .comment("方法名称"),
-                    )
-                    .col(
                         string(SysOperLog::RequestMethod)
-                            .char_len(10)
+                            .string_len(10)
                             .default("")
                             .comment("请求方式"),
                     )
                     .col(
                         string(SysOperLog::OperName)
-                            .char_len(50)
+                            .string_len(50)
                             .default("")
                             .comment("操作人员"),
                     )
                     .col(
                         string(SysOperLog::OperUrl)
-                            .char_len(255)
+                            .string_len(255)
                             .default("")
                             .comment("请求URL"),
                     )
                     .col(
                         string(SysOperLog::OperIp)
-                            .char_len(128)
+                            .string_len(128)
                             .default("")
                             .comment("主机地址"),
                     )
                     .col(
                         string(SysOperLog::OperLocation)
-                            .char_len(255)
+                            .string_len(255)
                             .default("")
                             .comment("操作地点"),
                     )
                     .col(
                         string(SysOperLog::OperParam)
-                            .char_len(2048)
+                            .text()
                             .default("")
                             .comment("请求参数"),
                     )
                     .col(
                         string(SysOperLog::JsonResult)
-                            .char_len(2048)
+                            .text()
                             .default("")
                             .comment("返回参数"),
                     )
@@ -110,7 +104,6 @@ enum SysOperLog {
     Table,
     Id,
     ApiName,
-    Method,
     RequestMethod,
     OperId,
     OperName,
