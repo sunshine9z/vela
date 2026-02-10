@@ -44,7 +44,8 @@ cache:
   namespace: vela  
   pool_size: 17
   # Queue Configuration
-  url: redis://:ymDT@rediS2pwD@127.0.0.1:6666/12 
+  url: redis://:ymDT@rediS2pwD@127.0.0.1:6666 
+  # url: redis://127.0.0.1:6666/12
 
 # genid 雪花id
 snowgenera:

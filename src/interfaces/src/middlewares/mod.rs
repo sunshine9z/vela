@@ -1,5 +1,5 @@
 mod auth;
-mod operate_log;
+mod operater_log;
 pub mod request_log;
 
 use std::{any::Any, time::Duration};
@@ -23,8 +23,8 @@ use tower_http::{
 };
 
 use crate::{
-    middlewares::{auth::check_permission_mid, operate_log::operate_log_fn_mid},
-    types::user_info::UserInfo,
+    middlewares::{auth::check_permission_mid, operater_log::operate_log_fn_mid},
+    types::user_info::CtxUserInfo,
 };
 
 const MIDDLEWARE_NAME: &str = "[Middleware]";
@@ -48,7 +48,7 @@ pub fn set_auth_middleware(router: Router) -> Router {
         .layer(middleware::from_fn(operate_log_fn_mid))
         .layer(middleware::from_fn(check_permission_mid))
         // .layer(middleware::from_fn(req_info_fn_mid)) // 注入请求信息
-        .layer(middleware::from_extractor::<UserInfo>()) //从token中注入用户信息
+        .layer(middleware::from_extractor::<CtxUserInfo>()) //从token中注入用户信息
 }
 
 pub fn set_common_middleware(mut router: Router) -> Router {

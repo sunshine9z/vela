@@ -1,18 +1,25 @@
 // pub async fn gen_captcha(arg: ClientInfo) -> CaptchaImage {}
 
+use std::time::Instant;
+
 use axum::{Extension, response::IntoResponse};
+use chrono::Local;
 use commonx::error::AppError;
 use infrastructurex::persistence::id_gen::next_id;
+use operaterLogDomain::{api::traits::OperaterLogDomainTrait, entity::OperaterLog};
 use userDomain::{
     api::{
-        dto::auth::{AuthDto, AuthDtoWithCaptcha},
+        dto::{
+            auth::{AuthDto, AuthDtoWithCaptcha},
+            user_info::UserInfoDto,
+        },
         traits::UserDomainTrait,
     },
     entity::{captcha::CaptchaImage, user::User},
 };
 
 use crate::{
-    common::{jwt::authorize, validated_json::VJson, validated_query::VQuery},
+    common::{OPERATOR_LOG_DOMAIN, jwt::authorize, validated_json::VJson, validated_query::VQuery},
     controller::USER_CONTROLLER,
     middlewares::ReqCtx,
     resp::ApiResponse,
@@ -76,7 +83,8 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             .map_err(|e| e.into())
     }
 
-    async fn login(&self, _req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError> {
+    async fn login(&self, req_ctx: ReqCtx, args: LoginReq) -> Result<LoginResp, AppError> {
+        let start_time = Instant::now();
         let user = self
             .user_domain
             .login(AuthDto {
@@ -86,24 +94,14 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             })
             .await?;
 
-        let auth_pyload = Claims {
-            username: user.username.clone(),
-            id: user.id,
-            role: user.role_id,
-            token_id: next_id(),
-            ..Default::default()
-        };
-        let token = authorize(auth_pyload).await?;
-        Ok(LoginResp {
-            token: token.token,
-            user: user,
-        })
+        do_login(req_ctx, user, start_time).await
     }
     async fn login_with_captcha(
         &self,
-        _req_ctx: ReqCtx,
+        req_ctx: ReqCtx,
         args: LoginWithCaptchaReq,
     ) -> Result<LoginResp, AppError> {
+        let start_time = Instant::now();
         let user = self
             .user_domain
             .login_with_captcha(AuthDtoWithCaptcha {
@@ -114,18 +112,7 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
             })
             .await?;
 
-        let auth_pyload = Claims {
-            username: user.username.clone(),
-            id: user.id,
-            role: user.role_id,
-            token_id: next_id(),
-            ..Default::default()
-        };
-        let token = authorize(auth_pyload).await?;
-        Ok(LoginResp {
-            token: token.token,
-            user: user,
-        })
+        do_login(req_ctx, user, start_time).await
     }
     async fn get_by_username(&self, username: String) -> Result<Option<User>, AppError> {
         self.user_domain
@@ -136,6 +123,45 @@ impl<T: UserDomainTrait + Sync + Send> UserControllerTrait for UserController<T>
     async fn get_by_id(&self, id: i64) -> Result<Option<User>, AppError> {
         self.user_domain.get_by_id(id).await.map_err(|e| e.into())
     }
+}
+
+async fn do_login(
+    req_ctx: ReqCtx,
+    user: UserInfoDto,
+    start_time: Instant,
+) -> Result<LoginResp, AppError> {
+    let auth_pyload = Claims {
+        username: user.username.clone(),
+        id: user.id,
+        role: user.role_id,
+        token_id: next_id(),
+        ..Default::default()
+    };
+    let token = authorize(auth_pyload).await?;
+    let res = LoginResp {
+        token: token.token,
+        user: user,
+    };
+    // 记录操作日志
+    OPERATOR_LOG_DOMAIN
+        .create(OperaterLog {
+            id: next_id(),
+            api_name: req_ctx.path.clone(),
+            oper_ip: req_ctx.ip.clone(),
+            oper_id: res.user.id,
+            oper_name: res.user.username.clone(),
+            oper_url: req_ctx.ori_uri.clone(),
+            oper_location: req_ctx.ori_uri.clone(),
+            request_method: req_ctx.method.clone(),
+            oper_param: req_ctx.path_params.clone(),
+            json_result: serde_json::to_string(&res).unwrap_or_default(),
+            cost_time: start_time.elapsed().as_millis() as i64,
+            oper_time: Local::now(),
+            ..Default::default()
+        })
+        .await?;
+
+    Ok(res)
 }
 
 impl<T: UserDomainTrait + Sync + Send> UserController<T> {

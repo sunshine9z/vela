@@ -12,3 +12,4 @@ tracing = { workspace = true }
 infrastructurex = { package = "infrastructure", path = "../src/infrastructure" }
 commonx = { package = "common", path = "../src/common" }
 interfacesx = { package = "interfaces", path = "../src/interfaces" }
+redis = "1.0.3"

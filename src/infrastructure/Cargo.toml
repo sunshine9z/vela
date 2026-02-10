@@ -10,6 +10,8 @@ operater_log_domain = { package = "operater_log_domain", path = "../domain/opera
 
 tokio = { workspace = true }
 once_cell = { workspace = true }
+# bb8 = { workspace = true }
+# bb8-redis = { workspace = true }
 bb8 = { workspace = true }
 bb8-redis = { workspace = true }
 serde = { workspace = true }

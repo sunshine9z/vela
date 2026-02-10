@@ -46,6 +46,12 @@ pub enum AppError {
 
     #[error("内部错误(500), 未实现: {0}")]
     NotImplementedError(String),
+
+    #[error("{inner}\n{backtrace}")]
+    WithBacktrace {
+        inner: Box<Self>,
+        backtrace: Box<std::backtrace::Backtrace>,
+    },
 }
 
 // impl IntoResponse for AppError {
@@ -53,6 +59,20 @@ pub enum AppError {
 //         self.into_status_tuple().into_response()
 //     }
 // }
+
+impl AppError {
+    pub fn bt(self) -> Self {
+        let backtrace = std::backtrace::Backtrace::capture();
+        match backtrace.status() {
+            std::backtrace::BacktraceStatus::Disabled
+            | std::backtrace::BacktraceStatus::Unsupported => self,
+            _ => Self::WithBacktrace {
+                inner: Box::new(self),
+                backtrace: Box::new(backtrace),
+            },
+        }
+    }
+}
 
 impl IntoStatusTuple for AppError {
     fn into_status_tuple(self) -> (StatusCode, String) {

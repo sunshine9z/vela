@@ -49,8 +49,8 @@ impl Processor {
 
     async fn fetch(&self) -> Result<Option<UnitOfWork>, AppError> {
         let cache = CacheManager::instance();
-        web_info!(" -- 从队列中获取任务: {:?}", &self.queues);
-        let res: Option<(String, String)> = cache.brpop(&self.queues, 5).await?;
+        // web_info!(" -- 从队列中获取任务: {:?}", &self.queues);
+        let res: Option<(String, String)> = cache.brpop(&self.queues, 2).await?;
         if let Some((queue, job_raw)) = res {
             let job: Job = serde_json::from_str(&job_raw)?;
             return Ok(Some(UnitOfWork { queue, job }));
@@ -68,20 +68,20 @@ impl Processor {
         let mut join_set = tokio::task::JoinSet::new();
 
         // 系统运行的任务队列
-        // for i in 0..self.num_workers {
-        //     join_set.spawn({
-        //         let processor = self.clone();
-        //         let cancellation_token = self.cancellation_token.clone();
-        //         async move {
-        //             while !cancellation_token.is_cancelled() {
-        //                 if let Err(err) = processor.process_one().await {
-        //                     web_error!(" -- 进程 {} 处理失败: {:?}", i, err);
-        //                 }
-        //             }
-        //             web_info!(" -- 进程 {} cancelled...", i);
-        //         }
-        //     });
-        // }
+        for i in 0..self.num_workers {
+            join_set.spawn({
+                let processor = self.clone();
+                let cancellation_token = self.cancellation_token.clone();
+                async move {
+                    while !cancellation_token.is_cancelled() {
+                        if let Err(err) = processor.process_one().await {
+                            web_error!(" -- 进程 {} 处理失败: {:?}", i, err.bt());
+                        }
+                    }
+                    web_info!(" -- 进程 {} cancelled...", i);
+                }
+            });
+        }
 
         /// 从 retry,schedule 队列中获取任务,加入到任务队列中运行
         join_set.spawn({
@@ -137,7 +137,6 @@ impl Processor {
     async fn process_one_tick_once(&self) -> Result<WorkFetcher, AppError> {
         let work = self.fetch().await?;
         if work.is_none() {
-            tokio::task::yield_now().await;
             return Ok(WorkFetcher::NoWorkFound);
         }
         let work = work.unwrap();

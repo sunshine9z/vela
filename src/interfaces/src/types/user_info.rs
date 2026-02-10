@@ -31,14 +31,14 @@ impl Keys {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct UserInfo {
+pub struct CtxUserInfo {
     pub username: String,
     pub id: i64,
     pub role: i64,
     pub token: String,
 }
 
-impl<S> FromRequestParts<S> for UserInfo
+impl<S> FromRequestParts<S> for CtxUserInfo
 where
     S: Send + Sync,
 {
@@ -74,7 +74,7 @@ where
                 };
             let claims: Claims = token_data.claims;
             tracing::info!(" userinfo.id:{:?}", claims.id);
-            let user = UserInfo {
+            let user = CtxUserInfo {
                 username: claims.username,
                 id: claims.id,
                 role: claims.role,

@@ -83,8 +83,9 @@ impl MigrationTrait for Migration {
                 Index::create()
                     .table(SysOperLog::Table)
                     .if_not_exists()
-                    .name("idx_sys_oper_log_oper_time")
+                    .name("idx_time_user_id")
                     .col(SysOperLog::OperTime)
+                    .col(SysOperLog::OperId)
                     .to_owned(),
             )
             .await?;

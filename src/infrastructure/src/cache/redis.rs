@@ -1,11 +1,12 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    sync::{Arc, RwLock},
+    time::Duration,
+};
 
 use bb8::Pool;
-use bb8_redis::{
-    RedisConnectionManager,
-    redis::{self, AsyncCommands, RedisResult},
-};
-use commonx::error::AppError;
+use bb8_redis::{RedisConnectionManager, bb8, redis};
+use commonx::{error::AppError, web_error};
+use redis::{AsyncCommands, RedisResult};
 use serde::{Deserialize, Serialize};
 
 use commonx::web_info;
@@ -18,9 +19,20 @@ pub struct RedisCache {
 
 impl RedisCache {
     pub async fn new(redis_url: &str, namespace: &String) -> Result<Self, AppError> {
-        let manager = RedisConnectionManager::new(redis_url)
-            .map_err(|e| AppError::RedisError(e.to_string()))?;
+        web_info!("初始化 RedisCache ns:{} url:{}", namespace, redis_url);
+        let manager = RedisConnectionManager::new(redis_url).map_err(|e| {
+            web_error!(
+                "初始化 RedisCache 失败 ns:{} url:{} err:{}",
+                namespace,
+                redis_url,
+                e
+            );
+            AppError::RedisError(e.to_string())
+        })?;
         let pool = Pool::builder()
+            .max_size(10)
+            .min_idle(Some(2))
+            .connection_timeout(Duration::from_secs(20))
             .build(manager)
             .await
             .map_err(|e| AppError::RedisError(e.to_string()))?;
@@ -111,7 +123,7 @@ impl RedisCache {
     ) -> Result<Option<(String, String)>, AppError> {
         let namespaced_keys = self.get_namespaced_keys(keys);
         let mut conn = self.pool.get().await?;
-        let result: Option<(String, String)> = conn.brpop(&namespaced_keys, timeout as f64).await?;
+        let result = conn.brpop(&namespaced_keys, timeout as f64).await?;
         if let Some((key, value)) = result {
             let original_key = keys
                 .iter()
@@ -127,8 +139,13 @@ impl RedisCache {
 
     pub fn get_namespaced_keys(&self, keys: &Vec<String>) -> Vec<String> {
         let mut result: Vec<String> = vec![];
+        let namespace = self.namespace.read().unwrap();
         keys.iter().for_each(|k| {
-            result.push(k.to_string());
+            if namespace.is_empty() {
+                result.push(k.to_string());
+            } else {
+                result.push(format!("{}:{}", namespace, k));
+            }
         });
         result
     }
@@ -189,5 +206,44 @@ impl RedisCache {
         let mut conn = self.pool.get().await?;
         let result: i64 = conn.zrem(&namespaced_key, value.to_string()).await?;
         Ok(result > 0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+
+    #[test]
+    async fn test_brpop_with_data() {
+        // 初始化RedisCache，使用默认的本地Redis连接
+        let redis_url = "redis://:ymDT@rediS2pwD@127.0.0.1:6666";
+        let namespace = "test".to_string();
+        let cache = RedisCache::new(redis_url, &namespace).await.unwrap();
+
+        // 测试前清理相关键
+        let test_queue = "test:queue";
+        let _ = cache.remove(test_queue).await;
+
+        // 向队列中添加测试数据
+        let test_value = "test_value";
+        cache.lpush(test_queue, test_value).await.unwrap();
+
+        // 测试brpop方法
+        let keys = vec![test_queue.to_string()];
+        println!(">>>>>>>>>>>>>>1");
+        let result = cache.brpop(&keys, 5).await;
+        println!(">>>>>>>>>>>>>>{:?}", result);
+
+        let result = cache.brpop(&keys, 5).await;
+        println!(">>>>>>>>>>>>>>{:?}", result);
+        // 验证结果
+        // assert!(result.is_some());
+        // let (queue, value) = result.unwrap();
+        // assert_eq!(queue, test_queue);
+        // assert_eq!(value, test_value);
+
+        // 测试后清理
+        let _ = cache.remove(test_queue).await;
     }
 }

@@ -3,16 +3,12 @@ use std::time::Instant;
 use axum::{extract::Request, middleware::Next, response::IntoResponse};
 use chrono::Local;
 use hyper::StatusCode;
-use infrastructurex::container::operater_log_domain::new_operater_log_domain_service;
-use once_cell::sync::Lazy;
-use operaterLogDomain::{
-    OperaterLogDomainImpl, api::traits::OperaterLogDomainTrait, entity::OperaterLog,
+use operaterLogDomain::{api::traits::OperaterLogDomainTrait, entity::OperaterLog};
+
+use crate::{
+    common::OPERATOR_LOG_DOMAIN, middlewares::ReqCtx, resp::RespDataString,
+    types::user_info::CtxUserInfo,
 };
-
-use crate::{middlewares::ReqCtx, resp::RespDataString, types::user_info::UserInfo};
-
-pub static OPERATOR_LOG_DOMAIN: Lazy<OperaterLogDomainImpl> =
-    Lazy::new(|| new_operater_log_domain_service());
 
 pub async fn operate_log_fn_mid(
     req: Request,
@@ -23,7 +19,7 @@ pub async fn operate_log_fn_mid(
         None => return Ok(next.run(req).await),
     };
 
-    let user_ctx = match req.extensions().get::<UserInfo>() {
+    let user_ctx = match req.extensions().get::<CtxUserInfo>() {
         Some(ctx) => ctx.clone(),
         None => return Ok(next.run(req).await),
     };
@@ -40,7 +36,7 @@ pub async fn operate_log_fn_mid(
 }
 pub async fn oper_log_add(
     req_ctx: &ReqCtx,
-    user_ctx: &UserInfo,
+    user_ctx: &CtxUserInfo,
     respdata: &String,
     duration: std::time::Duration,
 ) {

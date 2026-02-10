@@ -42,27 +42,27 @@ pub static GLOBAL_SCHEDULER: OnceLock<Arc<CronScheduled>> = OnceLock::new();
 
 pub struct CronScheduled {
     scheduler: Mutex<JobScheduler>,
-    hasStart: bool,
+    has_start: bool,
 }
 
 impl CronScheduled {
     pub fn new(scheduler: JobScheduler) -> Self {
         Self {
             scheduler: Mutex::new(scheduler),
-            hasStart: false,
+            has_start: false,
         }
     }
 
     pub async fn start(&mut self) -> Result<(), AppError> {
-        if self.hasStart {
+        if self.has_start {
             return Ok(());
         }
         let s = self.scheduler.lock().unwrap();
-        if self.hasStart {
+        if self.has_start {
             return Ok(());
         }
 
-        self.hasStart = true;
+        self.has_start = true;
 
         s.start().await.unwrap();
         Ok(())
