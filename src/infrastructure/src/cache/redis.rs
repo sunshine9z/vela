@@ -11,6 +11,8 @@ use serde::{Deserialize, Serialize};
 
 use commonx::web_info;
 
+use crate::cache::CacheTrait;
+
 #[derive(Debug)]
 pub struct RedisCache {
     pool: Pool<RedisConnectionManager>,
@@ -42,7 +44,31 @@ impl RedisCache {
         })
     }
 
-    pub async fn set_value_ex<T>(&self, k: &str, value: &T, t: i32) -> Result<bool, AppError>
+    fn get_namespaced_key(&self, key: &str) -> String {
+        let namespace = self.namespace.read().unwrap();
+        if namespace.is_empty() {
+            key.to_string()
+        } else {
+            format!("{}:{}", namespace, key)
+        }
+    }
+
+    fn get_namespaced_keys(&self, keys: &Vec<String>) -> Vec<String> {
+        let mut result: Vec<String> = vec![];
+        let namespace = self.namespace.read().unwrap();
+        keys.iter().for_each(|k| {
+            if namespace.is_empty() {
+                result.push(k.to_string());
+            } else {
+                result.push(format!("{}:{}", namespace, k));
+            }
+        });
+        result
+    }
+}
+#[async_trait::async_trait]
+impl CacheTrait for RedisCache {
+    async fn set_value_ex<T>(&self, k: &str, value: &T, t: i32) -> Result<bool, AppError>
     where
         T: Serialize + Sync,
     {
@@ -51,18 +77,18 @@ impl RedisCache {
         ret
     }
 
-    pub async fn get_oneuse_value<T>(&self, k: &str) -> Result<T, AppError>
+    async fn get_oneuse_value<T>(&self, k: &str) -> Result<T, AppError>
     where
-        T: Serialize + for<'de> Deserialize<'de>,
+        T: Serialize + for<'de> Deserialize<'de> + Sync + Send,
     {
-        let result = self.get_value(k).await;
+        let result = self.get_value::<T>(k).await;
         if result.is_ok() {
             let _ = self.remove(k).await;
         }
         result
     }
 
-    pub async fn set_string_ex(&self, k: &str, v: &str, t: i32) -> Result<bool, AppError> {
+    async fn set_string_ex(&self, k: &str, v: &str, t: i32) -> Result<bool, AppError> {
         let key = self.get_namespaced_key(k);
         let mut conn = self.pool.get().await?;
         let result: RedisResult<()> = conn.set_ex(&key, v, t as u64).await;
@@ -77,16 +103,7 @@ impl RedisCache {
         Ok(result.is_ok())
     }
 
-    fn get_namespaced_key(&self, key: &str) -> String {
-        let namespace = self.namespace.read().unwrap();
-        if namespace.is_empty() {
-            key.to_string()
-        } else {
-            format!("{}:{}", namespace, key)
-        }
-    }
-
-    pub async fn get_value<T>(&self, k: &str) -> Result<T, AppError>
+    async fn get_value<T>(&self, k: &str) -> Result<T, AppError>
     where
         T: Serialize + for<'de> Deserialize<'de>,
     {
@@ -100,7 +117,7 @@ impl RedisCache {
         Ok(serde_json::from_str(&value_str)?)
     }
 
-    pub async fn get_string(&self, k: &str) -> Result<String, AppError> {
+    async fn get_string(&self, k: &str) -> Result<String, AppError> {
         let key = self.get_namespaced_key(k);
         let mut conn = self.pool.get().await?;
         let result: Option<String> = conn.get(&key).await?;
@@ -109,14 +126,14 @@ impl RedisCache {
             .into()
     }
 
-    pub async fn remove(&self, k: &str) -> Result<usize, AppError> {
+    async fn remove(&self, k: &str) -> Result<usize, AppError> {
         let key = self.get_namespaced_key(k);
         let mut conn = self.pool.get().await?;
         let result: usize = conn.del(&key).await?;
         Ok(result)
     }
 
-    pub async fn brpop(
+    async fn brpop(
         &self,
         keys: &Vec<String>,
         timeout: usize,
@@ -137,20 +154,7 @@ impl RedisCache {
         }
     }
 
-    pub fn get_namespaced_keys(&self, keys: &Vec<String>) -> Vec<String> {
-        let mut result: Vec<String> = vec![];
-        let namespace = self.namespace.read().unwrap();
-        keys.iter().for_each(|k| {
-            if namespace.is_empty() {
-                result.push(k.to_string());
-            } else {
-                result.push(format!("{}:{}", namespace, k));
-            }
-        });
-        result
-    }
-
-    pub async fn set_nx_ex<V>(&self, key: &str, value: V, ttl: usize) -> Result<bool, AppError>
+    async fn set_nx_ex<V>(&self, key: &str, value: V, ttl: usize) -> Result<bool, AppError>
     where
         V: ToString + Sync + Send,
     {
@@ -166,14 +170,14 @@ impl RedisCache {
             .await?;
         Ok(result.is_some())
     }
-    pub async fn sadd(&self, key: &str, members: &[&str]) -> Result<usize, AppError> {
+    async fn sadd(&self, key: &str, members: &[&str]) -> Result<usize, AppError> {
         let namespaced_key = self.get_namespaced_key(key);
         let mut conn = self.pool.get().await?;
         let result: usize = conn.sadd(&namespaced_key, members).await?;
         Ok(result)
     }
 
-    pub async fn lpush<V>(&self, key: &str, value: V) -> Result<usize, AppError>
+    async fn lpush<V>(&self, key: &str, value: V) -> Result<usize, AppError>
     where
         V: ToString + Send + Sync,
     {
@@ -183,7 +187,7 @@ impl RedisCache {
         Ok(result)
     }
 
-    pub async fn zrangebyscore_limit(
+    async fn zrangebyscore_limit(
         &self,
         key: &str,
         min_score: f64,
@@ -198,7 +202,7 @@ impl RedisCache {
             .await?;
         Ok(result)
     }
-    pub async fn zrem<V>(&self, key: &str, value: V) -> Result<bool, AppError>
+    async fn zrem<V>(&self, key: &str, value: V) -> Result<bool, AppError>
     where
         V: ToString + Send + Sync,
     {

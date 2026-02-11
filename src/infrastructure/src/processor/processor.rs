@@ -105,7 +105,7 @@ impl Processor {
         // join_set.spawn({
         //     let cancellation_token = self.cancellation_token.clone();
         //     async move {
-        //         let sched = Scheduled::default();
+        //         let sched = CronScheduled::default();
         //         loop {
         //             select! {
         //                 _ = tokio::time::sleep(std::time::Duration::from_secs(30)) => {}
@@ -113,7 +113,7 @@ impl Processor {
         //                     break;
         //                 }
         //             }
-        //             if let Err(err) = sched.enqueue_periodic_jobs(chrono::Local::now()).await{
+        //             if let Err(err) = sched.enqueue_periodic_jobs(chrono::Local::now()).await {
         //                 web_error!("Error in scheduled poller routine: {:?}", err);
         //             }
         //         }

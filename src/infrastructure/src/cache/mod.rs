@@ -11,6 +11,69 @@ use crate::{cache::memory::MemoryCache, cache::redis::RedisCache};
 use commonx::config::APP_CONFIG;
 use commonx::web_info;
 
+/// 缓存接口定义
+#[async_trait::async_trait]
+pub trait CacheTrait: Send + Sync {
+    /// 设置带过期时间的缓存值
+    async fn set_value_ex<T>(&self, k: &str, value: &T, ttl: i32) -> Result<bool, AppError>
+    where
+        T: Serialize + Sync;
+
+    /// 获取一次性使用的缓存值（获取后删除）
+    async fn get_oneuse_value<T>(&self, k: &str) -> Result<T, AppError>
+    where
+        T: Serialize + for<'de> Deserialize<'de> + Sync + Send;
+
+    /// 从多个队列中阻塞获取数据
+    async fn brpop(
+        &self,
+        keys: &Vec<String>,
+        timeout: usize,
+    ) -> Result<Option<(String, String)>, AppError>;
+
+    /// 设置带过期时间的唯一缓存值
+    async fn set_nx_ex<V>(&self, key: &str, value: V, ttl: usize) -> Result<bool, AppError>
+    where
+        V: ToString + Send + Sync;
+
+    /// 向集合中添加成员
+    async fn sadd(&self, key: &str, values: &[&str]) -> Result<usize, AppError>;
+
+    /// 向左推入队列
+    async fn lpush<V>(&self, key: &str, value: V) -> Result<usize, AppError>
+    where
+        V: ToString + Send + Sync;
+
+    /// 获取有序集合中指定分数范围的成员
+    async fn zrangebyscore_limit(
+        &self,
+        key: &str,
+        min_score: f64,
+        max_score: f64,
+        offset: isize,
+        count: isize,
+    ) -> Result<Vec<String>, AppError>;
+
+    /// 从有序集合中移除成员
+    async fn zrem<V>(&self, key: &str, value: V) -> Result<bool, AppError>
+    where
+        V: ToString + Send + Sync;
+
+    /// 获取字符串值
+    async fn get_string(&self, k: &str) -> Result<String, AppError>;
+
+    /// 设置字符串值
+    async fn set_string_ex(&self, k: &str, v: &str, t: i32) -> Result<bool, AppError>;
+
+    /// 删除缓存
+    async fn remove(&self, k: &str) -> Result<usize, AppError>;
+
+    /// 获取值
+    async fn get_value<T>(&self, k: &str) -> Result<T, AppError>
+    where
+        T: Serialize + for<'de> Deserialize<'de> + Sync + Send;
+}
+
 static MODULE_NAME: &str = "[cache]";
 
 static DEFAULT_NAMESPACE: &str = "vela";
@@ -84,11 +147,11 @@ impl Cache {
 
     pub async fn get_oneuse_value<T>(&self, k: &str) -> Result<T, AppError>
     where
-        T: Serialize + for<'de> Deserialize<'de> + Sync,
+        T: Serialize + for<'de> Deserialize<'de> + Sync + Send,
     {
         match self {
-            Cache::Redis(cache) => cache.get_oneuse_value(k).await,
-            Cache::Memory(cache) => cache.get_oneuse_value(k).await,
+            Cache::Redis(cache) => cache.get_oneuse_value::<T>(k).await,
+            Cache::Memory(cache) => cache.get_oneuse_value::<T>(k).await,
         }
     }
 

@@ -1,4 +1,3 @@
-mod cron_scheduled;
 pub mod init;
 mod job;
 mod processor;

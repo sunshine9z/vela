@@ -1,4 +1,3 @@
-use crate::processor::cron_scheduled::init_corn_schedule;
 use crate::processor::processor::Processor;
 use crate::processor::wokers::job_worker::JobWorker;
 use crate::processor::wokers::mail_worker::MailerWorker;
@@ -11,7 +10,7 @@ pub const DEFAULT_QUEUE: &[&str] = &["default"];
 
 pub async fn init_worker() -> Result<(), AppError> {
     init_base_worker().await?;
-    init_corn_schedule().await?;
+    // init_corn_schedule().await?;
     Ok(())
 }
 
