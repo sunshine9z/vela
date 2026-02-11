@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PageReq {
-    pub page: Option<i64>,
-    pub page_size: Option<i64>,
+    pub page: Option<u64>,
+    pub page_size: Option<u64>,
 }
 
 impl Default for PageReq {

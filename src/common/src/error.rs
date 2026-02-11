@@ -108,6 +108,7 @@ impl_error_from!(
     bb8::RunError<bb8_redis::redis::RedisError>,
     Box<dyn std::error::Error>,
     sea_orm::DbErr,
+    tokio_cron_scheduler::JobSchedulerError,
 );
 
 impl From<&str> for AppError {
