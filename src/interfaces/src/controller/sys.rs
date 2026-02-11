@@ -12,23 +12,16 @@ pub trait SysControllerTrait {
     async fn init_all(&self) -> Result<(), AppError>;
 }
 
-pub struct SysController {
-    sys_domain_repository_impl: SysDomainRepositoryImpl,
-}
+pub struct SysController {}
 
 impl SysController {
-    pub fn new(sys_domain_repository_impl: SysDomainRepositoryImpl) -> Self {
-        Self {
-            sys_domain_repository_impl,
-        }
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
 impl SysControllerTrait for SysController {
     async fn init_all(&self) -> Result<(), AppError> {
-        self.sys_domain_repository_impl
-            .init_all()
-            .await
-            .map_err(|e| e.into())
+        Ok(())
     }
 }

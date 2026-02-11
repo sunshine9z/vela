@@ -1,7 +1,3 @@
-use argon2::{
-    Argon2, PasswordHasher,
-    password_hash::{SaltString, rand_core::OsRng},
-};
 use sea_orm::Statement;
 use sea_orm_migration::prelude::*;
 

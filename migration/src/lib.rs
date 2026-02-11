@@ -3,6 +3,7 @@ pub use sea_orm_migration::prelude::*;
 mod m20220101_000001_create_table;
 mod m20260206_020910_sys_job;
 mod m20260207_124414_init;
+mod m20260211_014728_corn_job;
 
 pub struct Migrator;
 
@@ -13,6 +14,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20220101_000001_create_table::Migration),
             Box::new(m20260206_020910_sys_job::Migration),
             Box::new(m20260207_124414_init::Migration),
+            Box::new(m20260211_014728_corn_job::Migration),
         ]
     }
 }

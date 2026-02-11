@@ -2,5 +2,6 @@
 
 pub mod prelude;
 
+pub mod corn_job;
 pub mod sys_oper_log;
 pub mod users;

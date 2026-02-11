@@ -1,5 +1,5 @@
 use commonx::error::AppError;
-use std::sync::Mutex;
+use std::{hash::Hash, sync::Mutex};
 use tokio_cron_scheduler::JobScheduler;
 
 // #[derive(Serialize,Deserialize,Debug,Clone)]
@@ -50,6 +50,7 @@ pub struct CronScheduled {
 pub struct JobStatus {
     pub job_id: String,
     pub is_running: bool,
+    // jobs: Mutex<HashMap<i64, JobHandle>>,
 }
 
 impl CronScheduled {

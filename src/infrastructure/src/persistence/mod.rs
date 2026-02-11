@@ -1,3 +1,4 @@
+pub mod corn_job;
 pub mod entities;
 pub mod id_gen;
 pub mod init;

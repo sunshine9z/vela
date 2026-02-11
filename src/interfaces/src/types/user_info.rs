@@ -102,11 +102,6 @@ pub struct GetByUsernameReq {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
-pub struct GetByIdReq {
-    pub id: i64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Validate, Default)]
 pub struct ClientInfoReq {
     pub client_id: String,
     pub width: Option<u32>,

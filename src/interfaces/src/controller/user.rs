@@ -24,10 +24,9 @@ use crate::{
     middlewares::ReqCtx,
     resp::ApiResponse,
     types::{
+        GetByIdReq,
         auth_jwt::Claims,
-        user_info::{
-            ClientInfoReq, GetByIdReq, GetByUsernameReq, LoginReq, LoginResp, LoginWithCaptchaReq,
-        },
+        user_info::{ClientInfoReq, GetByUsernameReq, LoginReq, LoginResp, LoginWithCaptchaReq},
     },
 };
 

@@ -9,7 +9,7 @@ members = [
   "src/domain/operater_log",
   "src/domain/user",
   "src/infrastructure",
-  "src/interfaces",
+  "src/interfaces", "src/query",
 ]
 exclude = ["db", "tools"]
 default-members = ["bin"]

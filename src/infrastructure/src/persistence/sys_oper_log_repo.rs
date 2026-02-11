@@ -23,7 +23,7 @@ impl sys_oper_log::Model {
             id: Set(id),
             api_name: Set(api_name),
             request_method: Set(request_method),
-            oper_id: Set(Option::Some(oper_id)),
+            oper_id: Set(oper_id),
             oper_name: Set(oper_name),
             oper_url: Set(oper_url),
             oper_ip: Set(oper_ip),
